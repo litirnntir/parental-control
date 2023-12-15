@@ -12,7 +12,7 @@ APP = ['main.py']
 DATA_FILES = []
 OPTIONS = {
     'iconfile': 'label.icns',
-    'packages': ['psutil']
+    'packages': ['PyQt6']
 }
 
 setup(
