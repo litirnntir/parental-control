@@ -29,15 +29,12 @@ class AppTracker(QWidget):
         # self.setWindowFlags(Qt.WindowType.FramelessWindowHint) # безрамочный интерфейс
         # self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)  # прозрачное окно
 
-        # Загрузите изображение из файла или ресурса
-        background_image = "background.png"  # Укажите путь к вашему файлу
-        pix = QPixmap(background_image)  # Создайте объект QPixmap из изображения
+        background_image = "background.png"
+        pix = QPixmap(background_image)
 
-        # Создайте палитру и кисть для вашего виджета
-        pal = QPalette()  # Создайте пустую палитру
-        pal.setBrush(self.backgroundRole(), QBrush(pix))  # Установите кисть с изображением для роли фона
-        self.setPalette(pal)  # Примените палитру к вашему виджету
-
+        pal = QPalette()
+        pal.setBrush(self.backgroundRole(), QBrush(pix))
+        self.setPalette(pal)
         self.setWindowTitle(APP_NAME)
         self.resize(840, 580)
         self.app_label = QLabel("Активное приложение:")
