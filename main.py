@@ -5,6 +5,10 @@ from PyQt6.QtCore import QTimer
 import time
 
 
+def close_app(app):
+    subprocess.call(f"killall {app}", shell=True)
+
+
 def get_active_app_name():
     script = """
     tell application "System Events"
