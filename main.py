@@ -23,9 +23,8 @@ def get_active_app_name():
 class AppTracker(QWidget):
     def __init__(self):
         super().__init__()
-        # добавьте эти две строки, чтобы сделать окно безрамочным и прозрачным
-        self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
-        # self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
+        # self.setWindowFlags(Qt.WindowType.FramelessWindowHint) # безрамочный интерфейс
+        # self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)  # прозрачное окно
         self.setWindowTitle("App Tracker")
         self.resize(300, 150)
         self.app_label = QLabel("Активное приложение: None")
