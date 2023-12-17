@@ -8,10 +8,12 @@ Usage:
 
 from setuptools import setup
 
+APP_NAME = 'Croak - Child Lock'
 APP = ['main.py']
 DATA_FILES = []
 OPTIONS = {
-    'iconfile': 'label.icns',
+    'plist': {'CFBundleName': APP_NAME},
+    'iconfile': 'croak-logo.icns',
     'packages': ['PyQt6']
 }
 

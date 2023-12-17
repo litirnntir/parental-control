@@ -3,6 +3,9 @@ import subprocess
 from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QInputDialog
 from PyQt6.QtCore import QTimer, Qt
 import time
+from PyQt6.QtGui import QPalette, QBrush, QPixmap
+
+APP_NAME = 'Croak - Child Lock'
 
 
 def close_app(app_name):
@@ -25,11 +28,21 @@ class AppTracker(QWidget):
         super().__init__()
         # self.setWindowFlags(Qt.WindowType.FramelessWindowHint) # безрамочный интерфейс
         # self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)  # прозрачное окно
-        self.setWindowTitle("App Tracker")
-        self.resize(300, 150)
-        self.app_label = QLabel("Активное приложение: None")
-        self.time_label = QLabel("Время в приложении: 0 seconds")
-        self.total_label = QLabel("Общее время: 0 seconds")
+
+        # Загрузите изображение из файла или ресурса
+        background_image = "background.jpg"  # Укажите путь к вашему файлу
+        pix = QPixmap(background_image)  # Создайте объект QPixmap из изображения
+
+        # Создайте палитру и кисть для вашего виджета
+        pal = QPalette()  # Создайте пустую палитру
+        pal.setBrush(self.backgroundRole(), QBrush(pix))  # Установите кисть с изображением для роли фона
+        self.setPalette(pal)  # Примените палитру к вашему виджету
+
+        self.setWindowTitle(APP_NAME)
+        self.resize(840, 580)
+        self.app_label = QLabel("Активное приложение:")
+        self.time_label = QLabel("Время в приложении:")
+        self.total_label = QLabel("Общее время:")
         self.layout = QVBoxLayout()
         self.layout.addWidget(self.app_label)
         self.layout.addWidget(self.time_label)
