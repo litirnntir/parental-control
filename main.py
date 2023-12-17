@@ -1,12 +1,12 @@
 import sys
 import subprocess
-from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout
-from PyQt6.QtCore import QTimer
+from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QInputDialog
+from PyQt6.QtCore import QTimer, Qt
 import time
 
 
-def close_app(app):
-    subprocess.call(f"killall {app}", shell=True)
+def close_app(app_name):
+    subprocess.call(f"killall {app_name}", shell=True)
 
 
 def get_active_app_name():
@@ -23,6 +23,9 @@ def get_active_app_name():
 class AppTracker(QWidget):
     def __init__(self):
         super().__init__()
+        # добавьте эти две строки, чтобы сделать окно безрамочным и прозрачным
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
+        # self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
         self.setWindowTitle("App Tracker")
         self.resize(300, 150)
         self.app_label = QLabel("Активное приложение: None")
@@ -39,6 +42,7 @@ class AppTracker(QWidget):
         self.active_app = None
         self.time_spent = 0
         self.total_time = 0
+        self.password = "1234"
 
     def update_data(self):
         current_app = get_active_app_name()
@@ -53,6 +57,13 @@ class AppTracker(QWidget):
         self.total_time += 1
         total_str = time.strftime("%H:%M:%S", time.gmtime(self.total_time))
         self.total_label.setText(f"Общее время: {total_str}")
+
+    def closeEvent(self, event):
+        text, ok = QInputDialog.getText(self, "Подтверждение выхода", "Введите пароль:")
+        if ok and text == self.password:
+            event.accept()
+        else:
+            event.ignore()
 
 
 app = QApplication(sys.argv)
