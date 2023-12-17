@@ -12,7 +12,14 @@ APP_NAME = 'Croak - Child Lock'
 APP = ['main.py']
 DATA_FILES = []
 OPTIONS = {
-    'plist': {'CFBundleName': APP_NAME},
+    'plist': {
+        'CFBundleName': APP_NAME,
+        'CFBundleDisplayName': APP_NAME,
+        'CFBundleGetInfoString': 'Desktop parents control',
+        'CFBundleVersion': '0.1.0 stable',
+        'CFBundleShortVersionString': '0.1.0',
+        'NSHumanReadableCopyright': 'Copyright (c) 2023 Gorbuntsova A.A., All rights reserves'
+    },
     'iconfile': 'croak-logo.icns',
     'packages': ['PyQt6']
 }

@@ -30,7 +30,7 @@ class AppTracker(QWidget):
         # self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)  # прозрачное окно
 
         # Загрузите изображение из файла или ресурса
-        background_image = "background.jpg"  # Укажите путь к вашему файлу
+        background_image = "background.png"  # Укажите путь к вашему файлу
         pix = QPixmap(background_image)  # Создайте объект QPixmap из изображения
 
         # Создайте палитру и кисть для вашего виджета
