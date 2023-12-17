@@ -1,3 +1,5 @@
+import signal
+
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import QTimer
 from PyQt6.QtGui import QPixmap, QPalette, QBrush
@@ -8,10 +10,31 @@ from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QInputDi
 from PyQt6.QtCore import QTimer, Qt
 import time
 from PyQt6.QtGui import QPalette, QBrush, QPixmap, QFont
+import os
 
 
+# Определяем функцию, которая принимает название приложения в качестве аргумента
 def close_app(app_name):
-    subprocess.call(f"killall {app_name}", shell=True)
+    try:
+        processes = os.popen("ps ax").readlines()
+        for process in processes:
+            if app_name in process:
+                fields = process.split()
+                pid = fields[0]
+                os.kill(int(pid), signal.SIGTERM)
+                print(f"Закрыли приложение {app_name}")
+    except:
+        pass
+
+
+def get_open_apps():
+    # Запускаем AppleScript, который возвращает список всех открытых приложений
+    script = 'tell application "System Events" to get name of every process whose background only is false'
+    output = subprocess.check_output(['osascript', '-e', script])
+    # Преобразуем вывод в список строк
+    output = output.decode('utf-8').strip().split(', ')
+    # Возвращаем список приложений
+    return output
 
 
 def get_active_app_name():
@@ -257,6 +280,13 @@ class MainWindow(QMainWindow):
         elif self.total_time < 1 and self.flag:
             if current_app != "python" and current_app != "pycharm" and current_app != "Croak - Child Lock":
                 close_app(current_app)
+                apps_list = get_open_apps()
+                if "pycharm" in apps_list: apps_list.remove("pycharm")
+                if "python" in apps_list: apps_list.remove("python")
+                if "Croak - Child Lock" in apps_list: apps_list.remove("Croak - Child Lock")
+                if "Finder" in apps_list: apps_list.remove("Finder")
+                for application in apps_list:
+                    close_app(application)
         else:
             self.time_all_time.setText(time.strftime("%H:%M:%S", time.gmtime(0)))
             self.time_active_app.setText(time.strftime("%H:%M:%S", time.gmtime(0)))
