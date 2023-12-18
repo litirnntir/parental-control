@@ -154,7 +154,7 @@ class SettingsWindow(QWidget):
                 data = {}
 
             # Проверяем, совпадает ли старый пароль с текущим
-            if old_password == self.password:
+            if old_password == data["password"]:
                 # Меняем пароль на новый
                 self.password = new_password
                 # Сохраняем новый пароль в словаре под ключом "password"
@@ -172,7 +172,6 @@ class SettingsWindow(QWidget):
 
         # Закрываем файл
         f.close()
-
 
     def select_directory(self):
         self.directory = QFileDialog.getExistingDirectory(self, "Выберите директорию")

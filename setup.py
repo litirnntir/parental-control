@@ -10,7 +10,7 @@ from setuptools import setup
 
 APP_NAME = 'Croak - Child Lock'
 APP = ['main.py']
-DATA_FILES = ['background.png']
+DATA_FILES = ['background.png', 'settings.json']
 OPTIONS = {
     'plist': {
         'CFBundleName': APP_NAME,
