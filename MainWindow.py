@@ -1,11 +1,16 @@
+import sys
+
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtWidgets import QMainWindow, QLineEdit, QMessageBox
 from PyQt6.QtWidgets import QInputDialog
 from PyQt6.QtCore import QTimer
 import time
 from PyQt6.QtGui import QPalette, QBrush, QPixmap
+
+import settings
 from system_functions import get_open_apps, close_app, get_active_app_name
 from settings import password, total_time
+from SettingsWindow import SettingsWindow
 
 
 class MainWindow(QMainWindow):
@@ -52,6 +57,8 @@ class MainWindow(QMainWindow):
         self.button_settings.setObjectName("button_settings")
         self.button_exit = QtWidgets.QPushButton(parent=self.centralwidget)
         self.button_exit.setGeometry(QtCore.QRect(530, 380, 201, 101))
+
+        self.button_settings.clicked.connect(self.openSettings)
         font = QtGui.QFont()
         font.setFamily("Oswald")
         font.setPointSize(23)
@@ -152,6 +159,8 @@ class MainWindow(QMainWindow):
 
         self.flag = True
 
+        self.settings_window = None
+
         # -----
 
         self.retranslate_ui(self)
@@ -180,10 +189,23 @@ class MainWindow(QMainWindow):
         password = dialog.textValue()
 
         if ok and password == self.password:
+            self.settings_window.close()
             event.accept()
         else:
             QMessageBox.warning(self, "Неверный пароль", "Вы ввели неверный пароль. Попробуйте еще раз.")
             event.ignore()
+
+    def openSettings(self):
+        self.settings_window = SettingsWindow(self)
+        # Показываем второе окно
+        self.settings_window.show()
+
+    def update_settings(self):
+        print("Обновляем настройки главного окна")  # здесь пишем логику обновления настроек
+
+    def update_settings(self):
+        self.password = settings.password
+        self.total_time = settings.total_time
 
     def update_data(self):
         current_app = get_active_app_name()
