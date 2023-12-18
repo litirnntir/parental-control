@@ -10,7 +10,7 @@ from setuptools import setup
 
 APP_NAME = 'Croak - Child Lock'
 APP = ['main.py']
-DATA_FILES = ['img/background.png']
+DATA_FILES = ['background.png']
 OPTIONS = {
     'plist': {
         'CFBundleName': APP_NAME,
@@ -20,7 +20,7 @@ OPTIONS = {
         'CFBundleShortVersionString': '0.1.0',
         'NSHumanReadableCopyright': 'Copyright (c) 2023 Gorbuntsova A.A., All rights reserves'
     },
-    'iconfile': 'img/croak-logo.icns',
+    'iconfile': 'croak-logo.icns',
     'packages': ['PyQt6']
 }
 

@@ -4,7 +4,8 @@ from PyQt6.QtWidgets import QInputDialog
 from PyQt6.QtCore import QTimer
 import time
 from PyQt6.QtGui import QPalette, QBrush, QPixmap
-from system_functions import *
+from system_functions import get_open_apps, close_app, get_active_app_name
+from settings import password
 
 
 class MainWindow(QMainWindow):
@@ -12,7 +13,7 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         # self.setWindowFlags(Qt.WindowType.FramelessWindowHint)  # безрамочный интерфейс
-        background_image = "img/background.png"
+        background_image = "background.png"
         pix = QPixmap(background_image)
         pal = QPalette()
         pal.setBrush(self.backgroundRole(), QBrush(pix))
@@ -129,8 +130,8 @@ class MainWindow(QMainWindow):
         self.progress_bar_active_app.setObjectName("progress_bar_active_app")
         self.setCentralWidget(self.centralwidget)
 
-        self.blocked_apps = {'Notion': 0}
-        self.blocked_apps_for_percents = {'Notion': 1}  # На ноль секунд нельзя заблокировать
+        self.blocked_apps = {'Notion': 30}
+        self.blocked_apps_for_percents = {'Notion': 30}  # На ноль секунд нельзя заблокировать
 
         self.stats_apps = {}
         # -----
@@ -190,7 +191,7 @@ class MainWindow(QMainWindow):
             if current_app != "Finder":
                 self.total_time -= 1
                 if current_app != self.active_app:
-                    if self.time_spent > 5:
+                    if self.time_spent > 2:
                         if self.active_app in self.stats_apps:
                             self.stats_apps[self.active_app] += self.time_spent
                         else:
@@ -228,8 +229,7 @@ class MainWindow(QMainWindow):
 
                 if self.active_app in self.blocked_apps:
                     if self.time_left_block_app > 1:
-                        self.progress_bar_active_app.setProperty("value", 100 * self.blocked_apps[self.active_app] /
-                                                                 self.blocked_apps_for_percents[self.active_app])
+                        self.progress_bar_active_app.setProperty("value", 100 * self.time_left_block_app / self.blocked_apps_for_percents[self.active_app])
                     else:
                         self.progress_bar_active_app.setProperty("value", 0)
                 else:
@@ -252,3 +252,4 @@ class MainWindow(QMainWindow):
 
             self.progress_bar_active_app.setProperty("value", 100)
             self.progress_bar_all_time.setProperty("value", 100)
+        self.text_active_app.setText(f"В {self.active_app}:")
