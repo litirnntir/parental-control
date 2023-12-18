@@ -5,7 +5,7 @@ from PyQt6.QtCore import QTimer
 import time
 from PyQt6.QtGui import QPalette, QBrush, QPixmap
 from system_functions import get_open_apps, close_app, get_active_app_name
-from settings import password
+from settings import password, total_time
 
 
 class MainWindow(QMainWindow):
@@ -130,8 +130,8 @@ class MainWindow(QMainWindow):
         self.progress_bar_active_app.setObjectName("progress_bar_active_app")
         self.setCentralWidget(self.centralwidget)
 
-        self.blocked_apps = {'Notion': 30}
-        self.blocked_apps_for_percents = {'Notion': 30}  # На ноль секунд нельзя заблокировать
+        self.blocked_apps = {'Notion': 60}
+        self.blocked_apps_for_percents = {'Notion': 60}  # На ноль секунд нельзя заблокировать
 
         self.stats_apps = {}
         # -----
@@ -144,9 +144,9 @@ class MainWindow(QMainWindow):
         self.time_left_block_app = 0  # Сколько времени осталось у заблокированного приложения
         self.time_spent = 0  # Времени проведено в приложении
 
-        self.total_time = 60  # секунд - хранение общего времени
-        self.total_time_for_percents = 60  # Переменная для создания бара
-        self.password = "1234"  # # для хранения пароля
+        self.total_time = total_time  # секунд - хранение общего времени
+        self.total_time_for_percents = total_time  # Переменная для создания бара
+        self.password = password  # # для хранения пароля
 
         self.button_exit.clicked.connect(self.close)
 
@@ -191,7 +191,7 @@ class MainWindow(QMainWindow):
             if current_app != "Finder":
                 self.total_time -= 1
                 if current_app != self.active_app:
-                    if self.time_spent > 2:
+                    if self.time_spent > 1:
                         if self.active_app in self.stats_apps:
                             self.stats_apps[self.active_app] += self.time_spent
                         else:
@@ -225,9 +225,13 @@ class MainWindow(QMainWindow):
                         self.time_left_block_app = self.total_time
 
                 self.time_all_time.setText(time.strftime("%H:%M:%S", time.gmtime(self.total_time)))
-                self.time_active_app.setText(time.strftime("%H:%M:%S", time.gmtime(self.time_left_block_app)))
 
-                if self.active_app in self.blocked_apps:
+                if self.time_left_block_app < self.total_time:
+                    self.time_active_app.setText(time.strftime("%H:%M:%S", time.gmtime(self.time_left_block_app)))
+                else:
+                    self.time_active_app.setText(time.strftime("%H:%M:%S", time.gmtime(self.total_time)))
+
+                if self.active_app in self.blocked_apps and self.time_left_block_app < self.total_time:
                     if self.time_left_block_app > 1:
                         self.progress_bar_active_app.setProperty("value", 100 * self.time_left_block_app / self.blocked_apps_for_percents[self.active_app])
                     else:
