@@ -11,6 +11,7 @@ import settings
 from system_functions import get_open_apps, close_app, get_active_app_name
 from settings import password, total_time
 from SettingsWindow import SettingsWindow
+import json
 
 
 class MainWindow(QMainWindow):
@@ -201,11 +202,15 @@ class MainWindow(QMainWindow):
         self.settings_window.show()
 
     def update_settings(self):
-        print("Обновляем настройки главного окна")  # здесь пишем логику обновления настроек
-
-    def update_settings(self):
-        self.password = settings.password
-        self.total_time = settings.total_time
+        # Открываем json файл с именем settings.json
+        with open("settings.json") as f:
+            # Загружаем словарь с данными из файла
+            data = json.load(f)
+            # Присваиваем значения пароля и времени атрибутам self
+            self.password = data["password"]
+            self.total_time = data["total_time"] * 60
+        # Закрываем файл
+        f.close()
 
     def update_data(self):
         current_app = get_active_app_name()

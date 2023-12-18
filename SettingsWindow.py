@@ -4,6 +4,7 @@ from PyQt6.QtCore import Qt, QTime
 
 import settings
 from settings import password, total_time
+import json
 
 
 class SettingsWindow(QWidget):
@@ -111,13 +112,29 @@ class SettingsWindow(QWidget):
 
         self.show()
 
+    import json
+
     def update_time(self, value):
+        # Вычисляем часы и минуты из значения
         hours = value // 60
         minutes = value % 60
         # Используем QTime для преобразования минут в формат времени
         time = QTime(hours, minutes)
         # Используем атрибут time_format для отображения времени в нужном формате
         self.time_label.setText(f"Установить лимит времени в минутах: {time.toString(self.time_format)}")
+
+        # Открываем json файл с именем settings.json в режиме "r+"
+        with open("settings.json", "r+") as f:
+            # Загружаем словарь с данными из файла
+            data = json.load(f)
+            # Изменяем значение total_time в словаре
+            data["total_time"] = value
+            # Перемещаем курсор в начало файла
+            f.seek(0)
+            # Очищаем файл
+            f.truncate()
+            # Сохраняем словарь в json файл
+            json.dump(data, f)
 
     def select_time(self):
         self.total_time = self.time_spinbox.value() * 60
@@ -127,20 +144,43 @@ class SettingsWindow(QWidget):
     def change_password(self):
         old_password = self.old_password_edit.text()
         new_password = self.new_password_edit.text()
-        if old_password == self.password:
-            self.password = new_password
-            settings.password = self.password
-            print(f"Пароль изменен на {self.password}")
-        else:
-            print("Неверный старый пароль")
+        # Открываем json файл с именем settings.json
+        with open("settings.json", "r+") as f:
+            # Пытаемся загрузить существующие данные из файла
+            try:
+                data = json.load(f)
+            # Если файл пустой или невалидный, создаем новый словарь
+            except (json.decoder.JSONDecodeError, FileNotFoundError):
+                data = {}
+
+            # Проверяем, совпадает ли старый пароль с текущим
+            if old_password == self.password:
+                # Меняем пароль на новый
+                self.password = new_password
+                # Сохраняем новый пароль в словаре под ключом "password"
+                data["password"] = self.password
+                print(f"Пароль изменен на {self.password}")
+            else:
+                print("Неверный старый пароль")
+
+            # Перемещаем курсор в начало файла
+            f.seek(0)
+            # Перезаписываем файл с новыми данными
+            json.dump(data, f)
+            # Обрезаем файл, чтобы удалить лишние данные
+            f.truncate()
+
+        # Закрываем файл
+        f.close()
+
 
     def select_directory(self):
         self.directory = QFileDialog.getExistingDirectory(self, "Выберите директорию")
         print(f"Выбрана директория: {self.directory}")
 
     def closeEvent(self, event):
-        self.main_window.update_settings()  # вызываем функцию главного окна
-        event.accept()  # разрешаем закрытие окна настроек
+        self.main_window.update_settings()
+        event.accept()
 
 
 if __name__ == '__main__':
