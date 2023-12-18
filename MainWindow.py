@@ -188,58 +188,58 @@ class MainWindow(QMainWindow):
     def update_data(self):
         current_app = get_active_app_name()
         if self.total_time > 0 and self.flag:
-            if current_app != "Finder":
-                self.total_time -= 1
-                if current_app != self.active_app:
-                    if self.time_spent > 1:
-                        if self.active_app in self.stats_apps:
-                            self.stats_apps[self.active_app] += self.time_spent
-                        else:
-                            self.stats_apps[self.active_app] = self.time_spent
-                    self.time_spent = 0
-                    if self.active_app in self.blocked_apps:
-                        self.blocked_apps[self.active_app] = self.time_left_block_app
-                    self.active_app = current_app
-                    if current_app in self.blocked_apps:
-                        if self.blocked_apps[current_app] <= 1:
-                            close_app(current_app)
-                            self.time_left_block_app = 0
-                            QMessageBox.warning(self, f"Время {current_app} вышло",
-                                                "Вы больше не сможете открыть приложение сегодня")
-                        else:
-                            self.time_left_block_app = self.blocked_apps[current_app]
-                            self.time_left_block_app -= 1
+            self.total_time -= 1
+            if current_app != self.active_app:
+                if self.time_spent > 1:
+                    if self.active_app in self.stats_apps:
+                        self.stats_apps[self.active_app] += self.time_spent
                     else:
-                        self.time_left_block_app = self.total_time
-                else:
-                    self.time_spent += 1
-                    if current_app in self.blocked_apps:
-                        if self.time_left_block_app <= 1:
-                            close_app(current_app)
-                            self.time_left_block_app = 0
-                            QMessageBox.warning(self, f"Время {current_app} вышло",
-                                                "Вы больше не можете находиться в приложении")
-                        else:
-                            self.time_left_block_app -= 1
+                        self.stats_apps[self.active_app] = self.time_spent
+                self.time_spent = 0
+                if self.active_app in self.blocked_apps:
+                    self.blocked_apps[self.active_app] = self.time_left_block_app
+                self.active_app = current_app
+                if current_app in self.blocked_apps:
+                    if self.blocked_apps[current_app] <= 1:
+                        close_app(current_app)
+                        self.time_left_block_app = 0
+                        QMessageBox.warning(self, f"Время {current_app} вышло",
+                                            "Вы больше не сможете открыть приложение сегодня")
                     else:
-                        self.time_left_block_app = self.total_time
-
-                self.time_all_time.setText(time.strftime("%H:%M:%S", time.gmtime(self.total_time)))
-
-                if self.time_left_block_app < self.total_time:
-                    self.time_active_app.setText(time.strftime("%H:%M:%S", time.gmtime(self.time_left_block_app)))
+                        self.time_left_block_app = self.blocked_apps[current_app]
+                        self.time_left_block_app -= 1
                 else:
-                    self.time_active_app.setText(time.strftime("%H:%M:%S", time.gmtime(self.total_time)))
-
-                if self.active_app in self.blocked_apps and self.time_left_block_app < self.total_time:
-                    if self.time_left_block_app > 1:
-                        self.progress_bar_active_app.setProperty("value", 100 * self.time_left_block_app / self.blocked_apps_for_percents[self.active_app])
+                    self.time_left_block_app = self.total_time
+            else:
+                self.time_spent += 1
+                if current_app in self.blocked_apps:
+                    if self.time_left_block_app <= 1:
+                        close_app(current_app)
+                        self.time_left_block_app = 0
+                        QMessageBox.warning(self, f"Время {current_app} вышло",
+                                            "Вы больше не можете находиться в приложении")
                     else:
-                        self.progress_bar_active_app.setProperty("value", 0)
+                        self.time_left_block_app -= 1
                 else:
-                    self.progress_bar_active_app.setProperty("value",
-                                                             100 * self.total_time / self.total_time_for_percents)
-                self.progress_bar_all_time.setProperty("value", 100 * self.total_time / self.total_time_for_percents)
+                    self.time_left_block_app = self.total_time
+
+            self.time_all_time.setText(time.strftime("%H:%M:%S", time.gmtime(self.total_time)))
+
+            if self.time_left_block_app < self.total_time:
+                self.time_active_app.setText(time.strftime("%H:%M:%S", time.gmtime(self.time_left_block_app)))
+            else:
+                self.time_active_app.setText(time.strftime("%H:%M:%S", time.gmtime(self.total_time)))
+
+            if self.active_app in self.blocked_apps and self.time_left_block_app < self.total_time:
+                if self.time_left_block_app > 1:
+                    self.progress_bar_active_app.setProperty("value", 100 * self.time_left_block_app /
+                                                             self.blocked_apps_for_percents[self.active_app])
+                else:
+                    self.progress_bar_active_app.setProperty("value", 0)
+            else:
+                self.progress_bar_active_app.setProperty("value",
+                                                         100 * self.total_time / self.total_time_for_percents)
+            self.progress_bar_all_time.setProperty("value", 100 * self.total_time / self.total_time_for_percents)
         elif self.total_time < 1 and self.flag:
             if current_app != "python" and current_app != "pycharm" and current_app != "Croak - Child Lock":
                 close_app(current_app)
