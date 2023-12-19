@@ -3,6 +3,17 @@ import os
 import signal
 
 
+def apps_list():
+    output = subprocess.check_output(
+        ["osascript", "-e",
+         "tell application \"System Events\" to get name of (processes where background only is false)"])
+
+    # Преобразуем вывод в список строк, разделенных запятыми
+    output = output.decode("utf-8").split(", ")
+    output[-1] = output[-1][:-1]
+    return output
+
+
 def close_app(app_name):
     try:
         processes = os.popen("ps ax").readlines()

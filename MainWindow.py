@@ -27,7 +27,7 @@ class MainWindow(QMainWindow):
         self.setPalette(pal)
 
         self.setObjectName("MainWindow")
-        self.resize(840, 580)
+        self.setFixedSize(840, 580)
         self.centralwidget = QtWidgets.QWidget(parent=self)
         self.centralwidget.setObjectName("centralwidget")
         self.text_active_app = QtWidgets.QLabel(parent=self.centralwidget)
@@ -163,6 +163,8 @@ class MainWindow(QMainWindow):
 
         self.settings_window = None
 
+        self.directory = None
+
         # -----
 
         self.retranslate_ui(self)
@@ -179,6 +181,7 @@ class MainWindow(QMainWindow):
         self.time_all_time.setText(_translate("MainWindow", time.strftime("%H:%M:%S", time.gmtime(self.total_time))))
         self.time_active_app.setText(
             _translate("MainWindow", time.strftime("%H:%M:%S", time.gmtime(self.time_left_block_app))))
+
 
     def closeEvent(self, event):
         dialog = QInputDialog(self)
@@ -208,6 +211,7 @@ class MainWindow(QMainWindow):
         # Показываем второе окно
         self.settings_window.show()
 
+
     def update_settings(self):
         # Открываем json файл с именем settings.json
         with open("settings.json") as f:
@@ -216,6 +220,7 @@ class MainWindow(QMainWindow):
             # Присваиваем значения пароля и времени атрибутам self
             self.password = data["password"]
             self.total_time = data["total_time"] * 60
+            self.directory = data["directory"]
         # Закрываем файл
         f.close()
 
