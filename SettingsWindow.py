@@ -216,7 +216,6 @@ class SettingsWindow(QWidget):
 
         self.chart = QChart()
         self.chart.setTitle("Диаграмма")
-        self.chart.legend().hide()
 
         self.series = QPieSeries()
         self.colors = [QColor(255, 0, 0), QColor(0, 255, 0), QColor(0, 0, 255), QColor(255, 255, 0),
