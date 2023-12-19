@@ -285,7 +285,6 @@ class MainWindow(QMainWindow):
                         close_app(current_app)
                         self.time_left_block_app = 0
 
-                        # TODO: Сообщение о закрытии
                         send_notification(f"Время {current_app} вышло. Вы больше не можете находиться в приложении")
                     else:
                         self.time_left_block_app = self.blocked_apps[current_app]
