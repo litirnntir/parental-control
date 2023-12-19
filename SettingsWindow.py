@@ -1,8 +1,10 @@
+from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import (QApplication, QWidget, QPushButton, QStackedWidget, QVBoxLayout, QHBoxLayout, QLabel,
-                             QSpinBox, QLineEdit, QFormLayout, QFileDialog)
+                             QSpinBox, QLineEdit, QFormLayout, QFileDialog, QMessageBox)
 from PyQt6.QtCore import Qt, QTime
 
 import settings
+from QMessages import incorrect_password
 from settings import password, total_time
 import json
 
@@ -160,8 +162,11 @@ class SettingsWindow(QWidget):
                 # Сохраняем новый пароль в словаре под ключом "password"
                 data["password"] = self.password
                 print(f"Пароль изменен на {self.password}")
+                QMessageBox.warning(self, "Успешно", "Пароль изменен")
             else:
+                incorrect_password()
                 print("Неверный старый пароль")
+                # QMessageBox.warning(self, "Неверный старый пароль", "Вы ввели неверный пароль. Попробуйте еще раз.")
 
             # Перемещаем курсор в начало файла
             f.seek(0)

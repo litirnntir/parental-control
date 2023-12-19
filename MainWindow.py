@@ -8,6 +8,7 @@ import time
 from PyQt6.QtGui import QPalette, QBrush, QPixmap
 
 import settings
+from QMessages import incorrect_password
 from system_functions import get_open_apps, close_app, get_active_app_name
 from settings import password, total_time
 from SettingsWindow import SettingsWindow
@@ -180,7 +181,6 @@ class MainWindow(QMainWindow):
             _translate("MainWindow", time.strftime("%H:%M:%S", time.gmtime(self.time_left_block_app))))
 
     def closeEvent(self, event):
-
         dialog = QInputDialog(self)
         dialog.setWindowTitle("Подтверждение выхода")
         dialog.setLabelText("Введите пароль:")
@@ -189,12 +189,19 @@ class MainWindow(QMainWindow):
         ok = dialog.exec()
         password = dialog.textValue()
 
-        if ok and password == self.password:
-            self.settings_window.close()
-            event.accept()
-        else:
-            QMessageBox.warning(self, "Неверный пароль", "Вы ввели неверный пароль. Попробуйте еще раз.")
-            event.ignore()
+        with open("settings.json") as f:
+            # Загружаем словарь с данными из файла
+            data = json.load(f)
+            # Присваиваем значения пароля и времени атрибутам self
+            if ok and password == data["password"]:
+                if self.settings_window:
+                    self.settings_window.close()
+                event.accept()
+            else:
+                incorrect_password()
+                event.ignore()
+        # Закрываем файл
+        f.close()
 
     def openSettings(self):
         self.settings_window = SettingsWindow(self)
