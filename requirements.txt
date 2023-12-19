@@ -1,2 +1,4 @@
 PyQt6~=6.6.1
 setuptools~=60.2.0
+
+osascript~=2020.12.3

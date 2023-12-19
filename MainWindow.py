@@ -1,17 +1,19 @@
 import sys
 
 from PyQt6 import QtCore, QtGui, QtWidgets
-from PyQt6.QtWidgets import QMainWindow, QLineEdit, QMessageBox
+from PyQt6.QtWidgets import QMainWindow, QLineEdit, QMessageBox, QDialog, QVBoxLayout
 from PyQt6.QtWidgets import QInputDialog
-from PyQt6.QtCore import QTimer
+from PyQt6.QtCore import QTimer, QThread
 import time
 from PyQt6.QtGui import QPalette, QBrush, QPixmap
 
 from QMessages import incorrect_password
-from system_functions import get_open_apps, close_app, get_active_app_name
+from system_functions import get_open_apps, close_app, get_active_app_name, send_notification
 from settings import password, total_time
 from SettingsWindow import SettingsWindow
 import json
+from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtWidgets import QMessageBox
 
 
 class MainWindow(QMainWindow):
@@ -225,9 +227,26 @@ class MainWindow(QMainWindow):
         return data
 
     def openSettings(self):
-        self.settings_window = SettingsWindow(self)
-        # Показываем второе окно
-        self.settings_window.show()
+        dialog = QInputDialog(self)
+        dialog.setWindowTitle("Подтверждение выхода")
+        dialog.setLabelText("Введите пароль:")
+        dialog.setTextEchoMode(QLineEdit.EchoMode.Password)
+
+        ok = dialog.exec()
+        password = dialog.textValue()
+
+        with open("settings.json") as f:
+            # Загружаем словарь с данными из файла
+            data = json.load(f)
+            # Присваиваем значения пароля и времени атрибутам self
+            if ok and password == data["password"]:
+                self.settings_window = SettingsWindow(self)
+                # Показываем второе окно
+                self.settings_window.show()
+            else:
+                incorrect_password()
+        # Закрываем файл
+        f.close()
 
     def update_settings(self):
         with open("settings.json") as f:
@@ -265,8 +284,9 @@ class MainWindow(QMainWindow):
                     if self.blocked_apps[current_app] <= 1:
                         close_app(current_app)
                         self.time_left_block_app = 0
-                        QMessageBox.warning(self, f"Время {current_app} вышло",
-                                            "Вы больше не сможете открыть приложение сегодня")
+
+                        # TODO: Сообщение о закрытии
+                        send_notification(f"Время {current_app} вышло. Вы больше не можете находиться в приложении")
                     else:
                         self.time_left_block_app = self.blocked_apps[current_app]
                         self.time_left_block_app -= 1
@@ -278,8 +298,10 @@ class MainWindow(QMainWindow):
                     if self.time_left_block_app <= 1:
                         close_app(current_app)
                         self.time_left_block_app = 0
-                        QMessageBox.warning(self, f"Время {current_app} вышло",
-                                            "Вы больше не можете находиться в приложении")
+                        send_notification(f"Время {current_app} вышло. Вы больше не можете находиться в приложении")
+
+                        # QMessageBox.warning(self, f"Время {current_app} вышло",
+                        #                     "Вы больше не можете находиться в приложении")
                     else:
                         self.time_left_block_app -= 1
                 else:

@@ -11,7 +11,7 @@ from setuptools import setup
 APP_NAME = 'Croak - Child Lock'
 APP = ['main.py']
 DATA_FILES = ['background.png', 'background_settings.png', 'settings.json', 'check_icon.png', 'correct_password.png',
-              'incorrect_password.png']
+              'incorrect_password.png', 'blocked_apps.json', 'blocked_apps_for_percents.json']
 OPTIONS = {
     'plist': {
         'CFBundleName': APP_NAME,
@@ -22,7 +22,7 @@ OPTIONS = {
         'NSHumanReadableCopyright': 'Copyright (c) 2023 Gorbuntsova A.A., All rights reserves'
     },
     'iconfile': 'croak-logo.icns',
-    'packages': ['PyQt6']
+    'packages': ['PyQt6', 'osascript']
 }
 
 setup(

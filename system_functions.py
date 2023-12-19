@@ -1,7 +1,13 @@
 import subprocess
 import os
 import signal
+import osascript
 
+
+def send_notification(text):
+    osascript.run("defaults write com.apple.notificationcenterui bannerTime 2")
+    command = f'display notification "{text}" with title "Croak"'
+    osascript.run(command)
 
 def apps_list():
     apps = []
