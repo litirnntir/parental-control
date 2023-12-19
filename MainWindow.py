@@ -205,6 +205,20 @@ class MainWindow(QMainWindow):
         # Закрываем файл
         f.close()
 
+    def get_blocked_apps_from_json(self):
+        with open("blocked_apps.json", "r") as file:
+            # Загружаем данные из файла в переменную data
+            data = json.load(file)
+        # Присваиваем переменную data словарю self.blocked_apps
+        self.blocked_apps = data
+
+    def get_blocked_apps_for_percents_from_json(self):
+        with open("blocked_apps_for_percents.json", "r") as file:
+            # Загружаем данные из файла в переменную data
+            data = json.load(file)
+        # Присваиваем переменную data словарю self.blocked_apps
+        self.blocked_apps_for_percents = data
+
     def openSettings(self):
         self.settings_window = SettingsWindow(self)
         # Показываем второе окно

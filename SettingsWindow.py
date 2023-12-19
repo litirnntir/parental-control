@@ -94,13 +94,13 @@ class SettingsWindow(QWidget):
         self.time_spinbox.setSuffix(" минут")
         self.time_spinbox.setSingleStep(15)
         self.time_spinbox.setValue(0)
-        self.time_spinbox.valueChanged.connect(self.update_time)
+        self.time_spinbox.valueChanged.connect(self.p1_update_time)
         self.time_format = "hh:mm"
         self.select_button = QPushButton("Выбрать", self.page1)
         self.select_button.setFont(font_button)
         self.select_button.setStyleSheet(
             "border-radius: 10px;color: rgb(255, 255, 255);background-color: qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:1.33, fx:0.5, fy:0.5, stop:0 rgba(26, 95, 146, 255), stop:1 rgba(255, 255, 255, 0));")
-        self.select_button.clicked.connect(self.select_time)
+        self.select_button.clicked.connect(self.p1_select_time)
         self.total_time = 0
 
         self.password_label = QLabel("Сменить пароль", self.page1)
@@ -114,7 +114,7 @@ class SettingsWindow(QWidget):
         self.change_password_button.setFont(font_button)
         self.change_password_button.setStyleSheet(
             "border-radius: 10px;color: rgb(255, 255, 255);background-color: qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:1.33, fx:0.5, fy:0.5, stop:0 rgba(26, 95, 146, 255), stop:1 rgba(255, 255, 255, 0));")
-        self.change_password_button.clicked.connect(self.change_password)
+        self.change_password_button.clicked.connect(self.p1_change_password)
 
         self.directory_label = QLabel("Директория для сохранения статистики: Нет", self.page1)
         self.directory_label.setWordWrap(True)
@@ -125,7 +125,7 @@ class SettingsWindow(QWidget):
         self.directory_button.setFont(font_button)
         self.directory_button.setStyleSheet(
             "border-radius: 10px;color: rgb(255, 255, 255);background-color: qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:1.33, fx:0.5, fy:0.5, stop:0 rgba(26, 95, 146, 255), stop:1 rgba(255, 255, 255, 0));")
-        self.directory_button.clicked.connect(self.select_directory)
+        self.directory_button.clicked.connect(self.p1_select_directory)
         self.directory = ""
 
         self.page1_layout = QVBoxLayout()
@@ -154,7 +154,7 @@ class SettingsWindow(QWidget):
         self.page2_layout = QVBoxLayout()
 
         self.label = QLabel("Добавить лимит на приложение")
-        self.label.setStyleSheet("font-size: 18px; font-weight: bold;")
+        self.label.setStyleSheet("color: white; font-size: 24px; font-family: Oswald;")
         self.page2_layout.addWidget(self.label)
 
         self.combo = QComboBox()
@@ -167,7 +167,10 @@ class SettingsWindow(QWidget):
         self.page2_layout.addWidget(self.time)
 
         self.set_limit = QPushButton("Установить лимит")
-        self.set_limit.clicked.connect(self.set_limit_clicked)
+        self.set_limit.setFont(font_button)
+        self.set_limit.setStyleSheet(
+            "border-radius: 10px;color: rgb(255, 255, 255);background-color: qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:1.33, fx:0.5, fy:0.5, stop:0 rgba(26, 95, 146, 255), stop:1 rgba(255, 255, 255, 0));")
+        self.set_limit.clicked.connect(self.page2_set_limit_clicked)
         self.page2_layout.addWidget(self.set_limit)
 
         self.table = QTableWidget()
@@ -180,11 +183,14 @@ class SettingsWindow(QWidget):
         self.table.setSelectionMode(
             QAbstractItemView.SelectionMode.SingleSelection)
         self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
-        self.update_table()
+        self.p2_update_table()
         self.page2_layout.addWidget(self.table)
 
-        self.delete = QPushButton("Удалить")
-        self.delete.clicked.connect(self.delete_clicked)
+        self.delete = QPushButton("Удалить лимит")
+        self.delete.setFont(font_button)
+        self.delete.setStyleSheet(
+            "border-radius: 10px;color: rgb(255, 255, 255);background-color: qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:1.33, fx:0.5, fy:0.5, stop:0 rgba(26, 95, 146, 255), stop:1 rgba(255, 255, 255, 0));")
+        self.delete.clicked.connect(self.p2_delete_clicked)
         self.page2_layout.addWidget(self.delete)
 
         self.page2.setLayout(self.page2_layout)
@@ -220,40 +226,91 @@ class SettingsWindow(QWidget):
 
         self.show()
 
-    def set_limit_clicked(self):
+    def page2_set_limit_clicked(self):
+        # Импортируем модуль json для работы с файлами json
+        import json
         app2 = self.combo.currentText()
         time2 = self.time.time().toString("hh:mm")
         h, m = time2.split(':')
         time2 = int(h) * 3600 + int(m) * 60
-        settings.blocked_apps[app2] = time2
-        settings.blocked_apps_for_percents[app2] = time2
-        self.update_table()
+        # Открываем файл blocked_apps.json в режиме чтения
+        with open("blocked_apps.json", "r") as file:
+            # Загружаем данные из файла в переменную data
+            data = json.load(file)
+        # Обновляем или добавляем time2 в data с ключом app2
+        data[app2] = time2
+        # Открываем файл blocked_apps.json в режиме записи
+        with open("blocked_apps.json", "w") as file:
+            # Записываем data в файл
+            json.dump(data, file)
+        # Открываем файл blocked_apps_for_percents.json в режиме чтения
+        with open("blocked_apps_for_percents.json", "r") as file:
+            # Загружаем данные из файла в переменную data
+            data = json.load(file)
+        # Обновляем или добавляем time2 в data с ключом app2
+        data[app2] = time2
+        # Открываем файл blocked_apps_for_percents.json в режиме записи
+        with open("blocked_apps_for_percents.json", "w") as file:
+            # Записываем data в файл
+            json.dump(data, file)
+        self.p2_update_table()
         self.main_window.update_settings()
         correct(f"Лимит для {app2} установлен")
 
-    def update_table(self):
-        self.table.setRowCount(len(settings.blocked_apps))
+
+    def p2_update_table(self):
+        # Импортируем модуль json для работы с файлами json
+        import json
+        # Открываем файл blocked_apps.json в режиме чтения
+        with open("blocked_apps.json", "r") as file:
+            # Загружаем данные из файла в переменную data
+            data = json.load(file)
+        # Устанавливаем количество строк таблицы равным длине data
+        self.table.setRowCount(len(data))
         row = 0
-        for app, time in settings.blocked_apps.items():
+        # Проходим по парам ключ-значение в data
+        for app, time in data.items():
+            # Создаем элементы таблицы для app и time
             app_item = QTableWidgetItem(app)
             h, m = divmod(time, 3600)
             m, s = divmod(m, 60)
             time_str = f'{h:02d}:{m:02d}'
             time_item = QTableWidgetItem(time_str)
+            # Добавляем элементы в таблицу
             self.table.setItem(row, 0, app_item)
             self.table.setItem(row, 1, time_item)
             row += 1
 
-    def delete_clicked(self):
+    def p2_delete_clicked(self):
+        # Импортируем модуль json для работы с файлами json
+        import json
         row = self.table.currentRow()
         if row != -1:
             app = self.table.item(row, 0).text()
-            del settings.blocked_apps[app]
-            del settings.blocked_apps_for_percents[app]
-            self.update_table()
+            # Открываем файл blocked_apps.json в режиме чтения
+            with open("blocked_apps.json", "r") as file:
+                # Загружаем данные из файла в переменную data
+                data = json.load(file)
+            # Удаляем app из data
+            del data[app]
+            # Открываем файл blocked_apps.json в режиме записи
+            with open("blocked_apps.json", "w") as file:
+                # Записываем data в файл
+                json.dump(data, file)
+            # Открываем файл blocked_apps_for_percents.json в режиме чтения
+            with open("blocked_apps_for_percents.json", "r") as file:
+                # Загружаем данные из файла в переменную data
+                data = json.load(file)
+            # Удаляем app из data
+            del data[app]
+            # Открываем файл blocked_apps_for_percents.json в режиме записи
+            with open("blocked_apps_for_percents.json", "w") as file:
+                # Записываем data в файл
+                json.dump(data, file)
+            self.p2_update_table()
             self.main_window.update_settings()
 
-    def update_time(self, value):
+    def p1_update_time(self, value):
         hours = value // 60
         minutes = value % 60
         timee = QTime(hours, minutes)
@@ -267,14 +324,14 @@ class SettingsWindow(QWidget):
             json.dump(data, f)
         f.close()
 
-    def select_time(self):
+    def p1_select_time(self):
         self.total_time = self.time_spinbox.value() * 60
         settings.total_time = self.time_spinbox.value() * 60
         self.main_window.update_settings()
         t = time.gmtime(self.total_time)
         correct(f'Лимит общего времени изменился на {time.strftime("%H:%M", t)}')
 
-    def change_password(self):
+    def p1_change_password(self):
         old_password = self.old_password_edit.text()
         new_password = self.new_password_edit.text()
         with open("settings.json", "r+") as f:
@@ -297,7 +354,7 @@ class SettingsWindow(QWidget):
         self.main_window.update_settings()
         f.close()
 
-    def select_directory(self):
+    def p1_select_directory(self):
         self.directory = QFileDialog.getExistingDirectory(self, "Выберите директорию")
         self.directory_label.setText(f"Директория для сохранения статистики: {self.directory}")
         with open("settings.json", "r") as f:
