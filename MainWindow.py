@@ -255,21 +255,22 @@ class MainWindow(QMainWindow):
             self.total_time -= 1
             if current_app != self.active_app:
                 if self.time_spent > 1:
-                    if self.active_app in settings.stats_apps:
-                        settings.stats_apps[self.active_app] += self.time_spent
-                    else:
-                        settings.stats_apps[self.active_app] = self.time_spent
-                    print(settings.stats_apps)
+
+                    with open("stats_apps.json", "r") as file:
+                        self.stats_apps = json.load(file)
+                        if self.active_app in self.stats_apps:
+                            self.stats_apps[self.active_app] = self.stats_apps[self.active_app] + self.time_spent
+                        else:
+                            self.stats_apps[self.active_app] = self.time_spent
+                    with open("stats_apps.json", "w") as file:
+                        json.dump(self.stats_apps, file)
+
                 self.time_spent = 0
                 if self.active_app in self.blocked_apps:
                     with open("blocked_apps.json", "r") as file:
-                        # Загружаем данные из файла в переменную data
                         data = json.load(file)
-                    # Обновляем или добавляем self.time_left_block_app в data с ключом self.active_app
                     data[self.active_app] = self.time_left_block_app
-                    # Открываем файл blocked_apps.json в режиме записи
                     with open("blocked_apps.json", "w") as file:
-                        # Записываем data в файл
                         json.dump(data, file)
                 self.active_app = current_app
                 if current_app in self.blocked_apps:
