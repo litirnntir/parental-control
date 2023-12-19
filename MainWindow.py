@@ -139,8 +139,8 @@ class MainWindow(QMainWindow):
         self.progress_bar_active_app.setObjectName("progress_bar_active_app")
         self.setCentralWidget(self.centralwidget)
 
-        self.blocked_apps = {'Notion': 60}
-        self.blocked_apps_for_percents = {'Notion': 60}  # На ноль секунд нельзя заблокировать
+        # self.blocked_apps = {'Notion': 60}
+        # self.blocked_apps_for_percents = {'Notion': 60}  # На ноль секунд нельзя заблокировать
 
         self.stats_apps = {}
         # -----
@@ -182,7 +182,6 @@ class MainWindow(QMainWindow):
         self.time_active_app.setText(
             _translate("MainWindow", time.strftime("%H:%M:%S", time.gmtime(self.time_left_block_app))))
 
-
     def closeEvent(self, event):
         dialog = QInputDialog(self)
         dialog.setWindowTitle("Подтверждение выхода")
@@ -211,17 +210,12 @@ class MainWindow(QMainWindow):
         # Показываем второе окно
         self.settings_window.show()
 
-
     def update_settings(self):
-        # Открываем json файл с именем settings.json
         with open("settings.json") as f:
-            # Загружаем словарь с данными из файла
             data = json.load(f)
-            # Присваиваем значения пароля и времени атрибутам self
             self.password = data["password"]
             self.total_time = data["total_time"] * 60
             self.directory = data["directory"]
-        # Закрываем файл
         f.close()
 
     def update_data(self):
@@ -235,23 +229,23 @@ class MainWindow(QMainWindow):
                     else:
                         self.stats_apps[self.active_app] = self.time_spent
                 self.time_spent = 0
-                if self.active_app in self.blocked_apps:
-                    self.blocked_apps[self.active_app] = self.time_left_block_app
+                if self.active_app in settings.blocked_apps:
+                    settings.blocked_apps[self.active_app] = self.time_left_block_app
                 self.active_app = current_app
-                if current_app in self.blocked_apps:
-                    if self.blocked_apps[current_app] <= 1:
+                if current_app in settings.blocked_apps:
+                    if settings.blocked_apps[current_app] <= 1:
                         close_app(current_app)
                         self.time_left_block_app = 0
                         QMessageBox.warning(self, f"Время {current_app} вышло",
                                             "Вы больше не сможете открыть приложение сегодня")
                     else:
-                        self.time_left_block_app = self.blocked_apps[current_app]
+                        self.time_left_block_app = settings.blocked_apps[current_app]
                         self.time_left_block_app -= 1
                 else:
                     self.time_left_block_app = self.total_time
             else:
                 self.time_spent += 1
-                if current_app in self.blocked_apps:
+                if current_app in settings.blocked_apps:
                     if self.time_left_block_app <= 1:
                         close_app(current_app)
                         self.time_left_block_app = 0
@@ -269,10 +263,10 @@ class MainWindow(QMainWindow):
             else:
                 self.time_active_app.setText(time.strftime("%H:%M:%S", time.gmtime(self.total_time)))
 
-            if self.active_app in self.blocked_apps and self.time_left_block_app < self.total_time:
+            if self.active_app in settings.blocked_apps and self.time_left_block_app < self.total_time:
                 if self.time_left_block_app > 1:
                     self.progress_bar_active_app.setProperty("value", 100 * self.time_left_block_app /
-                                                             self.blocked_apps_for_percents[self.active_app])
+                                                             settings.blocked_apps_for_percents[self.active_app])
                 else:
                     self.progress_bar_active_app.setProperty("value", 0)
             else:

@@ -4,14 +4,12 @@ import signal
 
 
 def apps_list():
-    output = subprocess.check_output(
-        ["osascript", "-e",
-         "tell application \"System Events\" to get name of (processes where background only is false)"])
-
-    # Преобразуем вывод в список строк, разделенных запятыми
-    output = output.decode("utf-8").split(", ")
-    output[-1] = output[-1][:-1]
-    return output
+    apps = []
+    app_path = "/Applications"
+    for file in os.listdir(app_path):
+        if file.endswith(".app"):
+            apps.append(file[:-4])
+    return apps
 
 
 def close_app(app_name):
@@ -28,12 +26,9 @@ def close_app(app_name):
 
 
 def get_open_apps():
-    # Запускаем AppleScript, который возвращает список всех открытых приложений
     script = 'tell application "System Events" to get name of every process whose background only is false'
     output = subprocess.check_output(['osascript', '-e', script])
-    # Преобразуем вывод в список строк
     output = output.decode('utf-8').strip().split(', ')
-    # Возвращаем список приложений
     return output
 
 

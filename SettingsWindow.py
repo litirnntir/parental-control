@@ -1,6 +1,7 @@
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import (QApplication, QWidget, QPushButton, QStackedWidget, QVBoxLayout, QHBoxLayout, QLabel,
-                             QSpinBox, QLineEdit, QFormLayout, QFileDialog, QMessageBox, QGridLayout, QScrollArea)
+                             QSpinBox, QLineEdit, QFormLayout, QFileDialog, QMessageBox, QGridLayout, QScrollArea,
+                             QTableWidget, QHeaderView, QAbstractItemView, QTimeEdit, QComboBox, QTableWidgetItem)
 from PyQt6.QtCore import Qt, QTime
 
 from PyQt6 import QtCore, QtGui, QtWidgets
@@ -9,9 +10,10 @@ from PyQt6.QtWidgets import QMainWindow, QApplication
 
 import settings
 from QMessages import incorrect_password, correct_change_password, correct
-from settings import password, total_time
+from settings import password, total_time, blocked_apps_for_percents
 import json
 import time
+from system_functions import apps_list
 
 
 class SettingsWindow(QWidget):
@@ -43,7 +45,6 @@ class SettingsWindow(QWidget):
         font_h2.setFamily("Oswald")
         font_h2.setPointSize(18)
 
-        # Создаем 5 кнопок
         self.button1 = QPushButton('Настройки')
         self.button1.setFont(font_button)
         self.button1.setStyleSheet(
@@ -65,7 +66,6 @@ class SettingsWindow(QWidget):
         self.button5.setStyleSheet(
             "border-radius: 10px;color: rgb(255, 255, 255);background-color: qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:1.33, fx:0.5, fy:0.5, stop:0 rgba(26, 95, 146, 255), stop:1 rgba(255, 255, 255, 0));")
 
-        # Создаем stackedWidget с 5 страницами
         self.stackedWidget = QStackedWidget()
         self.page1 = QWidget()
         self.page2 = QWidget()
@@ -91,22 +91,17 @@ class SettingsWindow(QWidget):
         self.time_label.setStyleSheet("color: rgb(255, 255, 255);")
         self.time_spinbox = QSpinBox(self.page1)
         self.time_spinbox.setRange(0, 1440)  # Минуты в сутках
-        # Изменяем суффикс на пустую строку
         self.time_spinbox.setSuffix(" минут")
-        # Изменяем шаг на 15 минут
         self.time_spinbox.setSingleStep(15)
         self.time_spinbox.setValue(0)
         self.time_spinbox.valueChanged.connect(self.update_time)
-        # Добавляем новый атрибут для хранения формата времени
         self.time_format = "hh:mm"
         self.select_button = QPushButton("Выбрать", self.page1)
         self.select_button.setFont(font_button)
         self.select_button.setStyleSheet(
             "border-radius: 10px;color: rgb(255, 255, 255);background-color: qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:1.33, fx:0.5, fy:0.5, stop:0 rgba(26, 95, 146, 255), stop:1 rgba(255, 255, 255, 0));")
         self.select_button.clicked.connect(self.select_time)
-        self.total_time = 0  # Время в секундах
-
-        # Password
+        self.total_time = 0
 
         self.password_label = QLabel("Сменить пароль", self.page1)
         self.password_label.setFont(font_h1)
@@ -121,8 +116,6 @@ class SettingsWindow(QWidget):
             "border-radius: 10px;color: rgb(255, 255, 255);background-color: qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:1.33, fx:0.5, fy:0.5, stop:0 rgba(26, 95, 146, 255), stop:1 rgba(255, 255, 255, 0));")
         self.change_password_button.clicked.connect(self.change_password)
 
-        # Directory
-
         self.directory_label = QLabel("Директория для сохранения статистики: Нет", self.page1)
         self.directory_label.setWordWrap(True)
 
@@ -133,9 +126,8 @@ class SettingsWindow(QWidget):
         self.directory_button.setStyleSheet(
             "border-radius: 10px;color: rgb(255, 255, 255);background-color: qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:1.33, fx:0.5, fy:0.5, stop:0 rgba(26, 95, 146, 255), stop:1 rgba(255, 255, 255, 0));")
         self.directory_button.clicked.connect(self.select_directory)
-        self.directory = ""  # Директория для сохранения
+        self.directory = ""
 
-        # Создаем layout для первой страницы
         self.page1_layout = QVBoxLayout()
         self.page1_layout.addWidget(self.time_label)
         self.page1_layout.addWidget(self.time_spinbox)
@@ -143,11 +135,9 @@ class SettingsWindow(QWidget):
         self.page1_layout.addWidget(self.password_label)
         self.page1_layout.addStretch()
         self.form_layout = QFormLayout()
-        # Добавляем отступы и выравнивание для формы ввода пароля
         self.form_layout.setContentsMargins(0, 0, 20, 20)
         self.form_layout.addRow("Введите старый пароль", self.old_password_edit)
         self.form_layout.addRow("Введите новый пароль", self.new_password_edit)
-        # Установить белый цвет, размер 18 и шрифт Oswald для меток
         self.form_layout.labelForField(self.old_password_edit).setStyleSheet(
             "color: white; font-size: 18px; font-family: Oswald;")
         self.form_layout.labelForField(self.new_password_edit).setStyleSheet(
@@ -161,7 +151,43 @@ class SettingsWindow(QWidget):
 
         ################# PAGE 2 ###################
 
+        self.page2_layout = QVBoxLayout()
 
+        self.label = QLabel("Добавить лимит на приложение")
+        self.label.setStyleSheet("font-size: 18px; font-weight: bold;")
+        self.page2_layout.addWidget(self.label)
+
+        self.combo = QComboBox()
+        self.combo.addItems(apps_list())
+        self.page2_layout.addWidget(self.combo)
+
+        self.time = QTimeEdit()
+        self.time.setDisplayFormat("hh:mm")
+        self.time.setTime(QTime(0, 0))
+        self.page2_layout.addWidget(self.time)
+
+        self.set_limit = QPushButton("Установить лимит")
+        self.set_limit.clicked.connect(self.set_limit_clicked)
+        self.page2_layout.addWidget(self.set_limit)
+
+        self.table = QTableWidget()
+        self.table.setColumnCount(2)
+        self.table.setHorizontalHeaderLabels(["Приложение", "Время"])
+        self.table.horizontalHeader().setSectionResizeMode(
+            QHeaderView.ResizeMode.Stretch)
+        self.table.setSelectionBehavior(
+            QAbstractItemView.SelectionBehavior.SelectRows)
+        self.table.setSelectionMode(
+            QAbstractItemView.SelectionMode.SingleSelection)
+        self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.update_table()
+        self.page2_layout.addWidget(self.table)
+
+        self.delete = QPushButton("Удалить")
+        self.delete.clicked.connect(self.delete_clicked)
+        self.page2_layout.addWidget(self.delete)
+
+        self.page2.setLayout(self.page2_layout)
 
         ################# PAGE 3 ###################
 
@@ -194,28 +220,49 @@ class SettingsWindow(QWidget):
 
         self.show()
 
-    import json
+    def set_limit_clicked(self):
+        app2 = self.combo.currentText()
+        time2 = self.time.time().toString("hh:mm")
+        h, m = time2.split(':')
+        time2 = int(h) * 3600 + int(m) * 60
+        settings.blocked_apps[app2] = time2
+        settings.blocked_apps_for_percents[app2] = time2
+        self.update_table()
+        self.main_window.update_settings()
+
+    def update_table(self):
+        self.table.setRowCount(len(settings.blocked_apps))
+        row = 0
+        for app, time in settings.blocked_apps.items():
+            app_item = QTableWidgetItem(app)
+            h, m = divmod(time, 3600)
+            m, s = divmod(m, 60)
+            time_str = f'{h:02d}:{m:02d}'
+            time_item = QTableWidgetItem(time_str)
+            self.table.setItem(row, 0, app_item)
+            self.table.setItem(row, 1, time_item)
+            row += 1
+
+    def delete_clicked(self):
+        row = self.table.currentRow()
+        if row != -1:
+            app = self.table.item(row, 0).text()
+            del settings.blocked_apps[app]
+            del settings.blocked_apps_for_percents[app]
+            self.update_table()
+            self.main_window.update_settings()
 
     def update_time(self, value):
-        # Вычисляем часы и минуты из значения
         hours = value // 60
         minutes = value % 60
-        # Используем QTime для преобразования минут в формат времени
         timee = QTime(hours, minutes)
-        # Используем атрибут time_format для отображения времени в нужном формате
         self.time_label.setText(f"Установить лимит времени в минутах: {timee.toString(self.time_format)}")
 
-        # Открываем json файл с именем settings.json в режиме "r+"
         with open("settings.json", "r+") as f:
-            # Загружаем словарь с данными из файла
             data = json.load(f)
-            # Изменяем значение total_time в словаре
             data["total_time"] = value
-            # Перемещаем курсор в начало файла
             f.seek(0)
-            # Очищаем файл
             f.truncate()
-            # Сохраняем словарь в json файл
             json.dump(data, f)
         f.close()
 
@@ -229,33 +276,24 @@ class SettingsWindow(QWidget):
     def change_password(self):
         old_password = self.old_password_edit.text()
         new_password = self.new_password_edit.text()
-        # Открываем json файл с именем settings.json
         with open("settings.json", "r+") as f:
-            # Пытаемся загрузить существующие данные из файла
             try:
                 data = json.load(f)
-            # Если файл пустой или невалидный, создаем новый словарь
+
             except (json.decoder.JSONDecodeError, FileNotFoundError):
                 data = {}
 
-            # Проверяем, совпадает ли старый пароль с текущим
             if old_password == data["password"]:
-                # Меняем пароль на новый
                 self.password = new_password
-                # Сохраняем новый пароль в словаре под ключом "password"
                 data["password"] = self.password
                 correct_change_password()
             else:
                 incorrect_password()
 
-            # Перемещаем курсор в начало файла
             f.seek(0)
-            # Перезаписываем файл с новыми данными
             json.dump(data, f)
-            # Обрезаем файл, чтобы удалить лишние данные
             f.truncate()
         self.main_window.update_settings()
-        # Закрываем файл
         f.close()
 
     def select_directory(self):
