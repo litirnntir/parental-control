@@ -1,20 +1,16 @@
-import sys
+import json
+import time
 
 from PyQt6 import QtCore, QtGui, QtWidgets
-from PyQt6.QtWidgets import QMainWindow, QLineEdit, QMessageBox, QDialog, QVBoxLayout
-from PyQt6.QtWidgets import QInputDialog
-from PyQt6.QtCore import QTimer, QThread
-import time
-from PyQt6.QtGui import QPalette, QBrush, QPixmap
+from PyQt6.QtCore import QTimer
+from PyQt6.QtGui import QBrush, QPalette, QPixmap
+from PyQt6.QtWidgets import QLineEdit, QMainWindow, QInputDialog
 
-import settings
 from QMessages import incorrect_password
-from system_functions import get_open_apps, close_app, get_active_app_name, send_notification
-from settings import password, total_time, stats_apps
 from SettingsWindow import SettingsWindow
-import json
-from PyQt6.QtCore import pyqtSignal
-from PyQt6.QtWidgets import QMessageBox
+from system_functions import (close_app, get_active_app_name, get_from_json,
+                              get_open_apps, send_notification)
+
 
 
 class MainWindow(QMainWindow):
@@ -141,28 +137,29 @@ class MainWindow(QMainWindow):
         self.progress_bar_active_app.setObjectName("progress_bar_active_app")
         self.setCentralWidget(self.centralwidget)
 
-        self.stats_apps = settings.stats_apps
+        self.stats_apps = get_from_json("stats_apps.json")
         # -----
 
-        self.timer = QTimer()  # таймер
-        self.timer.timeout.connect(self.update_data)  # подключаем сигнал таймера к слоту update_data
-        self.timer.start(1000)  # таймер с интервалом в 1000 миллисекунд
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.update_data)
+        self.timer.start(1000)
         self.active_app = None
 
         self.time_left_block_app = 0  # Сколько времени осталось у заблокированного приложения
         self.time_spent = 0  # Времени проведено в приложении
 
-        self.total_time = total_time  # секунд - хранение общего времени
-        self.total_time_for_percents = total_time  # Переменная для создания бара
-        self.password = password  # # для хранения пароля
+        self.total_time = get_from_json("settings.json")['total_time']  # секунд - хранение общего времени
+        self.total_time_for_percents = get_from_json("settings.json")[
+            'total_time_for_percents']  # Переменная для создания бара
+        self.password = get_from_json  # # для хранения пароля
 
-        self.blocked_apps = self.get_from_json("blocked_apps.json")
-        self.blocked_apps_for_percents = self.get_from_json("blocked_apps_for_percents.json")
+        self.blocked_apps = get_from_json("blocked_apps.json")
+        self.blocked_apps_for_percents = get_from_json("blocked_apps_for_percents.json")
 
         self.button_exit.clicked.connect(self.close)
 
-        self.blocked_apps = self.get_from_json("blocked_apps.json")
-        self.blocked_apps_for_percents = self.get_from_json("blocked_apps_for_percents.json")
+        self.blocked_apps = get_from_json("blocked_apps.json")
+        self.blocked_apps_for_percents = get_from_json("blocked_apps_for_percents.json")
 
         self.flag = True
 
@@ -197,9 +194,7 @@ class MainWindow(QMainWindow):
         password = dialog.textValue()
 
         with open("settings.json") as f:
-            # Загружаем словарь с данными из файла
             data = json.load(f)
-            # Присваиваем значения пароля и времени атрибутам self
             if ok and password == data["password"]:
                 if self.settings_window:
                     self.settings_window.close()
@@ -207,15 +202,7 @@ class MainWindow(QMainWindow):
             else:
                 incorrect_password()
                 event.ignore()
-        # Закрываем файл
         f.close()
-
-    def get_from_json(self, file_name):
-        with open(str(file_name), "r") as file:
-            # Загружаем данные из файла в переменную data
-            data = json.load(file)
-        # Присваиваем переменную data словарю self.blocked_apps
-        return data
 
     def openSettings(self):
         dialog = QInputDialog(self)
@@ -227,16 +214,12 @@ class MainWindow(QMainWindow):
         password = dialog.textValue()
 
         with open("settings.json") as f:
-            # Загружаем словарь с данными из файла
             data = json.load(f)
-            # Присваиваем значения пароля и времени атрибутам self
             if ok and password == data["password"]:
                 self.settings_window = SettingsWindow(self)
-                # Показываем второе окно
                 self.settings_window.show()
             else:
                 incorrect_password()
-        # Закрываем файл
         f.close()
 
     def update_settings(self):
@@ -244,12 +227,13 @@ class MainWindow(QMainWindow):
             data = json.load(f)
             self.password = data["password"]
             self.total_time = data["total_time"] * 60
+            self.total_time_for_percents = data["total_time_for_percents"] * 60
             self.directory = data["directory"]
         f.close()
 
     def update_data(self):
-        self.blocked_apps = self.get_from_json("blocked_apps.json")
-        self.blocked_apps_for_percents = self.get_from_json("blocked_apps_for_percents.json")
+        self.blocked_apps = get_from_json("blocked_apps.json")
+        self.blocked_apps_for_percents = get_from_json("blocked_apps_for_percents.json")
         current_app = get_active_app_name()
         if self.total_time > 0 and self.flag:
             self.total_time -= 1
@@ -291,9 +275,6 @@ class MainWindow(QMainWindow):
                         close_app(current_app)
                         self.time_left_block_app = 0
                         send_notification(f"Время {current_app} вышло. Вы больше не можете находиться в приложении")
-
-                        # QMessageBox.warning(self, f"Время {current_app} вышло",
-                        #                     "Вы больше не можете находиться в приложении")
                     else:
                         self.time_left_block_app -= 1
                 else:
@@ -318,6 +299,7 @@ class MainWindow(QMainWindow):
             self.progress_bar_all_time.setProperty("value", 100 * self.total_time / self.total_time_for_percents)
         elif self.total_time < 1 and self.flag:
             if current_app != "python" and current_app != "pycharm" and current_app != "Croak - Child Lock":
+                send_notification(f"Общее время вышло. Вы больше не можете зайти в {current_app}")
                 close_app(current_app)
                 apps_list = get_open_apps()
                 if "pycharm" in apps_list: apps_list.remove("pycharm")

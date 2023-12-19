@@ -1,7 +1,16 @@
+import json
 import subprocess
 import os
 import signal
 import osascript
+
+
+def get_from_json(file_name):
+        with open(str(file_name), "r") as file:
+            # Загружаем данные из файла в переменную data
+            data = json.load(file)
+        # Присваиваем переменную data словарю self.blocked_apps
+        return data
 
 
 def send_notification(text):

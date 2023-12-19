@@ -1,21 +1,20 @@
-from PyQt6.QtCharts import QChart, QChartView, QPieSeries
-from PyQt6.QtGui import QPixmap, QColor, QPainter
-from PyQt6.QtWidgets import (QApplication, QWidget, QPushButton, QStackedWidget, QVBoxLayout, QHBoxLayout, QLabel,
-                             QSpinBox, QLineEdit, QFormLayout, QFileDialog, QMessageBox, QGridLayout, QScrollArea,
-                             QTableWidget, QHeaderView, QAbstractItemView, QTimeEdit, QComboBox, QTableWidgetItem,
-                             QLCDNumber)
-from PyQt6.QtCore import Qt, QTime, QTimer
+import json
+import time
 
-from PyQt6 import QtCore, QtGui, QtWidgets
+from PyQt6 import QtGui
+from PyQt6.QtCharts import QChart, QChartView, QPieSeries
+from PyQt6.QtCore import Qt, QTime, QTimer
+from PyQt6.QtGui import QColor, QPainter
 from PyQt6.QtGui import QPixmap, QBrush, QPalette
-from PyQt6.QtWidgets import QMainWindow, QApplication
+from PyQt6.QtWidgets import QApplication
+from PyQt6.QtWidgets import (QWidget, QPushButton, QStackedWidget, QVBoxLayout, QHBoxLayout, QLabel,
+                             QSpinBox, QLineEdit, QFormLayout, QFileDialog, QTableWidget, QHeaderView,
+                             QAbstractItemView, QTimeEdit, QComboBox, QTableWidgetItem,
+                             QLCDNumber, QColorDialog)
 
 import settings
 from QMessages import incorrect_password, correct_change_password, correct
-from settings import password, total_time
-import json
-import time
-from system_functions import apps_list
+from system_functions import apps_list, get_from_json
 
 
 class SettingsWindow(QWidget):
@@ -24,7 +23,7 @@ class SettingsWindow(QWidget):
 
         self.main_window = parent
         self.initUI()
-        self.password = password
+        self.password = get_from_json("settings.json")["password"]
 
     def initUI(self):
 
@@ -216,16 +215,30 @@ class SettingsWindow(QWidget):
 
         self.chart = QChart()
         self.chart.setTitle("Диаграмма")
+        self.chart.setTitleFont(font_h1)
+
+        self.color_button = QPushButton("Выбрать цвет фона")
+        self.color_button.setFont(font_button)
+        self.color_button.setStyleSheet(
+            "border-radius: 10px;color: rgb(255, 255, 255);background-color: qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:1.33, fx:0.5, fy:0.5, stop:0 rgba(26, 95, 146, 255), stop:1 rgba(255, 255, 255, 0));")
+        # Подключите сигнал нажатия кнопки к слоту color_picker
+        self.color_button.clicked.connect(self.color_picker)
+        # Добавьте кнопку в ваш макет
+        self.page3_layout.addWidget(self.color_button)
 
         self.series = QPieSeries()
         self.colors = [QColor(255, 0, 0), QColor(0, 255, 0), QColor(0, 0, 255), QColor(255, 255, 0),
                        QColor(0, 255, 255)]
+
         self.chart_view = QChartView(self.chart)
         self.chart_view.setRenderHint(QPainter.RenderHint.Antialiasing)
 
         self.page3_layout.addWidget(self.chart_view)
 
         self.reset_button = QPushButton("Сбросить статистику")
+        self.reset_button.setFont(font_button)
+        self.reset_button.setStyleSheet(
+            "border-radius: 10px;color: rgb(255, 255, 255);background-color: qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:1.33, fx:0.5, fy:0.5, stop:0 rgba(26, 95, 146, 255), stop:1 rgba(255, 255, 255, 0));")
         self.reset_button.clicked.connect(self.reset_stats)
 
         self.page3_layout.addWidget(self.reset_button)
@@ -262,6 +275,13 @@ class SettingsWindow(QWidget):
         self.setFixedSize(840, 580)
 
         self.show()
+
+    def color_picker(self):
+        # Откройте диалог выбора цвета и получите выбранный цвет
+        color = QColorDialog.getColor()
+        # Если цвет был выбран, установите его в качестве цвета фона для диаграммы
+        if color.isValid():
+            self.chart.setBackgroundBrush(QBrush(color))
 
     def update_data(self):
         with open("stats_apps.json", "r") as f:
@@ -345,7 +365,7 @@ class SettingsWindow(QWidget):
             with open("blocked_apps_for_percents.json", "w") as file:
                 json.dump(data, file)
             self.p2_update_table()
-            self.main_window.update_settings()
+        self.main_window.update_settings()
 
     def p1_update_time(self, value):
         hours = value // 60
@@ -356,10 +376,12 @@ class SettingsWindow(QWidget):
         with open("settings.json", "r+") as f:
             data = json.load(f)
             data["total_time"] = value
+            data["total_time_for_percents"] = value
             f.seek(0)
             f.truncate()
             json.dump(data, f)
         f.close()
+        self.main_window.update_settings()
 
     def p1_select_time(self):
         self.total_time = self.time_spinbox.value() * 60
@@ -402,7 +424,6 @@ class SettingsWindow(QWidget):
         self.main_window.update_settings()
 
     def closeEvent(self, event):
-        self.main_window.update_settings()
         event.accept()
 
 
