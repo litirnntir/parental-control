@@ -10,7 +10,7 @@ from PyQt6.QtWidgets import QMainWindow, QApplication
 
 import settings
 from QMessages import incorrect_password, correct_change_password, correct
-from settings import password, total_time, blocked_apps_for_percents
+from settings import password, total_time
 import json
 import time
 from system_functions import apps_list

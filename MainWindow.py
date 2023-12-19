@@ -7,9 +7,10 @@ from PyQt6.QtCore import QTimer, QThread
 import time
 from PyQt6.QtGui import QPalette, QBrush, QPixmap
 
+import settings
 from QMessages import incorrect_password
 from system_functions import get_open_apps, close_app, get_active_app_name, send_notification
-from settings import password, total_time
+from settings import password, total_time, stats_apps
 from SettingsWindow import SettingsWindow
 import json
 from PyQt6.QtCore import pyqtSignal
@@ -140,10 +141,7 @@ class MainWindow(QMainWindow):
         self.progress_bar_active_app.setObjectName("progress_bar_active_app")
         self.setCentralWidget(self.centralwidget)
 
-        # self.blocked_apps = {'Notion': 60}
-        # self.blocked_apps_for_percents = {'Notion': 60}  # На ноль секунд нельзя заблокировать
-
-        self.stats_apps = {}
+        self.stats_apps = settings.stats_apps
         # -----
 
         self.timer = QTimer()  # таймер
@@ -158,13 +156,13 @@ class MainWindow(QMainWindow):
         self.total_time_for_percents = total_time  # Переменная для создания бара
         self.password = password  # # для хранения пароля
 
-        self.blocked_apps = self.get_blocked_apps_from_json()
-        self.blocked_apps_for_percents = self.get_blocked_apps_for_percents_from_json()
+        self.blocked_apps = self.get_from_json("blocked_apps.json")
+        self.blocked_apps_for_percents = self.get_from_json("blocked_apps_for_percents.json")
 
         self.button_exit.clicked.connect(self.close)
 
-        self.blocked_apps = self.get_blocked_apps_from_json()
-        self.blocked_apps_for_percents = self.get_blocked_apps_for_percents_from_json()
+        self.blocked_apps = self.get_from_json("blocked_apps.json")
+        self.blocked_apps_for_percents = self.get_from_json("blocked_apps_for_percents.json")
 
         self.flag = True
 
@@ -212,15 +210,8 @@ class MainWindow(QMainWindow):
         # Закрываем файл
         f.close()
 
-    def get_blocked_apps_from_json(self):
-        with open("blocked_apps.json", "r") as file:
-            # Загружаем данные из файла в переменную data
-            data = json.load(file)
-        # Присваиваем переменную data словарю self.blocked_apps
-        return data
-
-    def get_blocked_apps_for_percents_from_json(self):
-        with open("blocked_apps_for_percents.json", "r") as file:
+    def get_from_json(self, file_name):
+        with open(str(file_name), "r") as file:
             # Загружаем данные из файла в переменную data
             data = json.load(file)
         # Присваиваем переменную data словарю self.blocked_apps
@@ -257,17 +248,18 @@ class MainWindow(QMainWindow):
         f.close()
 
     def update_data(self):
-        self.blocked_apps = self.get_blocked_apps_from_json()
-        self.blocked_apps_for_percents = self.get_blocked_apps_for_percents_from_json()
+        self.blocked_apps = self.get_from_json("blocked_apps.json")
+        self.blocked_apps_for_percents = self.get_from_json("blocked_apps_for_percents.json")
         current_app = get_active_app_name()
         if self.total_time > 0 and self.flag:
             self.total_time -= 1
             if current_app != self.active_app:
                 if self.time_spent > 1:
-                    if self.active_app in self.stats_apps:
-                        self.stats_apps[self.active_app] += self.time_spent
+                    if self.active_app in settings.stats_apps:
+                        settings.stats_apps[self.active_app] += self.time_spent
                     else:
-                        self.stats_apps[self.active_app] = self.time_spent
+                        settings.stats_apps[self.active_app] = self.time_spent
+                    print(settings.stats_apps)
                 self.time_spent = 0
                 if self.active_app in self.blocked_apps:
                     with open("blocked_apps.json", "r") as file:
