@@ -1,8 +1,10 @@
-from PyQt6.QtGui import QPixmap
+from PyQt6.QtCharts import QChart, QChartView, QPieSeries
+from PyQt6.QtGui import QPixmap, QColor, QPainter
 from PyQt6.QtWidgets import (QApplication, QWidget, QPushButton, QStackedWidget, QVBoxLayout, QHBoxLayout, QLabel,
                              QSpinBox, QLineEdit, QFormLayout, QFileDialog, QMessageBox, QGridLayout, QScrollArea,
-                             QTableWidget, QHeaderView, QAbstractItemView, QTimeEdit, QComboBox, QTableWidgetItem)
-from PyQt6.QtCore import Qt, QTime
+                             QTableWidget, QHeaderView, QAbstractItemView, QTimeEdit, QComboBox, QTableWidgetItem,
+                             QLCDNumber)
+from PyQt6.QtCore import Qt, QTime, QTimer
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtGui import QPixmap, QBrush, QPalette
@@ -78,8 +80,6 @@ class SettingsWindow(QWidget):
         self.stackedWidget.addWidget(self.page4)
         self.stackedWidget.addWidget(self.page5)
 
-        self.label2 = QLabel('Это текст для кнопки 2', self.page2)
-        self.label3 = QLabel('Это текст для кнопки 3', self.page3)
         self.label4 = QLabel('Это текст для кнопки 4', self.page4)
         self.label5 = QLabel('Это текст для кнопки 5', self.page5)
 
@@ -104,6 +104,7 @@ class SettingsWindow(QWidget):
         self.total_time = 0
 
         self.password_label = QLabel("Сменить пароль", self.page1)
+        self.password_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.password_label.setFont(font_h1)
         self.password_label.setStyleSheet("color: rgb(255, 255, 255);")
         self.old_password_edit = QLineEdit(self.page1)
@@ -197,6 +198,43 @@ class SettingsWindow(QWidget):
 
         ################# PAGE 3 ###################
 
+        self.page3_layout = QVBoxLayout()
+        self.page3.setLayout(self.page3_layout)
+
+        self.timer = QLCDNumber()
+        self.timer.setDigitCount(8)
+        self.timer.display("00:00:00")
+
+        self.timer_label = QLabel("Статистика за последние: ")
+        self.timer_label.setStyleSheet("color: white; font-size: 24px; font-family: Oswald;")
+
+        self.timer_layout = QHBoxLayout()
+        self.timer_layout.addWidget(self.timer_label)
+        self.timer_layout.addWidget(self.timer)
+
+        self.page3_layout.addLayout(self.timer_layout)
+
+        self.chart = QChart()
+        self.chart.setTitle("Диаграмма")
+        self.chart.legend().hide()
+
+        self.series = QPieSeries()
+        self.colors = [QColor(255, 0, 0), QColor(0, 255, 0), QColor(0, 0, 255), QColor(255, 255, 0),
+                       QColor(0, 255, 255)]
+        self.chart_view = QChartView(self.chart)
+        self.chart_view.setRenderHint(QPainter.RenderHint.Antialiasing)
+
+        self.page3_layout.addWidget(self.chart_view)
+
+        self.reset_button = QPushButton("Сбросить статистику")
+        self.reset_button.clicked.connect(self.reset_stats)
+
+        self.page3_layout.addWidget(self.reset_button)
+
+        self.update_timer = QTimer()
+        self.update_timer.timeout.connect(self.update_data)
+        self.update_timer.start(1000)
+
         ################# PAGE 4 ###################
 
         ################# PAGE 5 ###################
@@ -226,86 +264,86 @@ class SettingsWindow(QWidget):
 
         self.show()
 
+    def update_data(self):
+        with open("stats_apps.json", "r") as f:
+            stats = json.load(f)
+
+        total_time = sum(stats.values())
+
+        hours = total_time // 3600
+        minutes = (total_time % 3600) // 60
+        seconds = total_time % 60
+        time_str = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+
+        self.timer.display(time_str)
+
+        self.series.clear()
+
+        for i, (app, time) in enumerate(stats.items()):
+            percentage = round(time / total_time * 100, 2)
+            self.series.append(f"{app} ({percentage}%)", time)
+            self.series.slices()[i].setBrush(self.colors[i % len(self.colors)])
+
+        self.chart.addSeries(self.series)
+
+    def reset_stats(self):
+        with open("stats_apps.json", "w") as f:
+            json.dump({}, f)
+
+        self.series.clear()
+        self.timer.display("00:00:00")
+
     def page2_set_limit_clicked(self):
-        # Импортируем модуль json для работы с файлами json
         import json
         app2 = self.combo.currentText()
         time2 = self.time.time().toString("hh:mm")
         h, m = time2.split(':')
         time2 = int(h) * 3600 + int(m) * 60
-        # Открываем файл blocked_apps.json в режиме чтения
         with open("blocked_apps.json", "r") as file:
-            # Загружаем данные из файла в переменную data
             data = json.load(file)
-        # Обновляем или добавляем time2 в data с ключом app2
         data[app2] = time2
-        # Открываем файл blocked_apps.json в режиме записи
         with open("blocked_apps.json", "w") as file:
-            # Записываем data в файл
             json.dump(data, file)
-        # Открываем файл blocked_apps_for_percents.json в режиме чтения
         with open("blocked_apps_for_percents.json", "r") as file:
-            # Загружаем данные из файла в переменную data
             data = json.load(file)
-        # Обновляем или добавляем time2 в data с ключом app2
         data[app2] = time2
-        # Открываем файл blocked_apps_for_percents.json в режиме записи
         with open("blocked_apps_for_percents.json", "w") as file:
-            # Записываем data в файл
             json.dump(data, file)
         self.p2_update_table()
         self.main_window.update_settings()
         correct(f"Лимит для {app2} установлен")
 
-
     def p2_update_table(self):
-        # Импортируем модуль json для работы с файлами json
         import json
-        # Открываем файл blocked_apps.json в режиме чтения
         with open("blocked_apps.json", "r") as file:
-            # Загружаем данные из файла в переменную data
             data = json.load(file)
-        # Устанавливаем количество строк таблицы равным длине data
         self.table.setRowCount(len(data))
         row = 0
-        # Проходим по парам ключ-значение в data
         for app, time in data.items():
-            # Создаем элементы таблицы для app и time
             app_item = QTableWidgetItem(app)
             h, m = divmod(time, 3600)
             m, s = divmod(m, 60)
             time_str = f'{h:02d}:{m:02d}'
             time_item = QTableWidgetItem(time_str)
-            # Добавляем элементы в таблицу
             self.table.setItem(row, 0, app_item)
             self.table.setItem(row, 1, time_item)
             row += 1
 
     def p2_delete_clicked(self):
-        # Импортируем модуль json для работы с файлами json
         import json
         row = self.table.currentRow()
         if row != -1:
             app = self.table.item(row, 0).text()
-            # Открываем файл blocked_apps.json в режиме чтения
             with open("blocked_apps.json", "r") as file:
-                # Загружаем данные из файла в переменную data
                 data = json.load(file)
-            # Удаляем app из data
             del data[app]
-            # Открываем файл blocked_apps.json в режиме записи
             with open("blocked_apps.json", "w") as file:
-                # Записываем data в файл
                 json.dump(data, file)
-            # Открываем файл blocked_apps_for_percents.json в режиме чтения
             with open("blocked_apps_for_percents.json", "r") as file:
-                # Загружаем данные из файла в переменную data
                 data = json.load(file)
-            # Удаляем app из data
+
             del data[app]
-            # Открываем файл blocked_apps_for_percents.json в режиме записи
             with open("blocked_apps_for_percents.json", "w") as file:
-                # Записываем data в файл
                 json.dump(data, file)
             self.p2_update_table()
             self.main_window.update_settings()

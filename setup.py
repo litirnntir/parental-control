@@ -11,7 +11,7 @@ from setuptools import setup
 APP_NAME = 'Croak - Child Lock'
 APP = ['main.py']
 DATA_FILES = ['background.png', 'background_settings.png', 'settings.json', 'check_icon.png', 'correct_password.png',
-              'incorrect_password.png', 'blocked_apps.json', 'blocked_apps_for_percents.json']
+              'incorrect_password.png', 'blocked_apps.json', 'blocked_apps_for_percents.json', 'stats_apps.json']
 OPTIONS = {
     'plist': {
         'CFBundleName': APP_NAME,
