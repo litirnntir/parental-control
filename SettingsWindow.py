@@ -229,6 +229,7 @@ class SettingsWindow(QWidget):
         settings.blocked_apps_for_percents[app2] = time2
         self.update_table()
         self.main_window.update_settings()
+        correct(f"Лимит для {app2} установлен")
 
     def update_table(self):
         self.table.setRowCount(len(settings.blocked_apps))
