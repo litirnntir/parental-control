@@ -1,3 +1,4 @@
+import datetime
 import json
 import os
 import time
@@ -14,23 +15,14 @@ from system_functions import (close_app, get_active_app_name, get_from_json,
                               get_open_apps, send_notification)
 
 
-def is_time_eq(target_time):
-    # Отправляем запрос к World Time API, чтобы получить текущее время в Нью-Йорке
-    response = requests.get("http://worldtimeapi.org/api/timezone/Europe/Samara")
-    # Проверяем, что ответ успешный
-    if response.status_code == 200:
-        # Извлекаем текущее время из ответа в формате "HH:MM:SS"
-        current_time = response.json()["datetime"][11:19]
-        # Сравниваем текущее время с нужным временем
-        if current_time == target_time:
-            # Возвращаем True, если текущее время больше нужного
-            return True
-        else:
-            # Возвращаем False, если текущее время меньше или равно нужному
-            return False
-    else:
-        # Возвращаем None, если ответ неуспешный
-        return None
+def check_time(time):
+    # Преобразуем строку time в объект datetime.time, используя метод strptime
+    time = datetime.datetime.strptime(time, "%H:%M:%S").time()
+    # Получаем текущее время с помощью метода datetime.time.now()
+    now = datetime.datetime.now().time()
+    # Сравниваем time и now, используя оператор ==
+    # Возвращаем результат сравнения в виде булевого значения True или False
+    return time == now
 
 
 class MainWindow(QMainWindow):
@@ -270,7 +262,7 @@ class MainWindow(QMainWindow):
         else:
             self.break_json = None
 
-        if is_time_eq(get_from_json("settings.json")['send_stats_time']):
+        if get_from_json("settings.json")['send_stats_time'] == datetime.datetime.now().strftime("%H:%M:%S"):
             print("Статистика обновлена")
             with open("stats_apps.json", "w") as f:
                 json.dump({}, f)
