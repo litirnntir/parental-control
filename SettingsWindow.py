@@ -570,7 +570,6 @@ class SettingsWindow(QWidget):
         with open("settings.json", "r+") as f:
             data = json.load(f)
             data["total_time"] = value
-            data["total_time_for_percents"] = value
             f.seek(0)
             f.truncate()
             json.dump(data, f)

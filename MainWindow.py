@@ -150,7 +150,7 @@ class MainWindow(QMainWindow):
 
         self.total_time = get_from_json("settings.json")['total_time'] * 60  # секунд - хранение общего времени
         self.total_time_for_percents = get_from_json("settings.json")[
-            'total_time_for_percents']  # Переменная для создания бара
+            'total_time']  # Переменная для создания бара
         self.password = get_from_json  # # для хранения пароля
 
         self.blocked_apps = get_from_json("blocked_apps.json")
@@ -227,11 +227,16 @@ class MainWindow(QMainWindow):
             data = json.load(f)
             self.password = data["password"]
             self.total_time = data["total_time"] * 60
-            self.total_time_for_percents = data["total_time_for_percents"] * 60
+            self.total_time_for_percents = data["total_time"] * 60
             self.directory = data["directory"]
         f.close()
 
     def update_data(self):
+        # TODO: проверка на изменение json
+        print(get_from_json("settings.json")['total_time'] * 60)
+        print(self.total_time)
+        if (get_from_json("settings.json")['total_time'] - self.total_time) > 5:
+            print("Json взломали")
         self.blocked_apps = get_from_json("blocked_apps.json")
         self.blocked_apps_for_percents = get_from_json("blocked_apps_for_percents.json")
         current_app = get_active_app_name()
