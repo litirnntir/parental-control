@@ -79,13 +79,10 @@ class SettingsWindow(QWidget):
         self.stackedWidget.addWidget(self.page4)
         self.stackedWidget.addWidget(self.page5)
 
-        self.label4 = QLabel('Это текст для кнопки 4', self.page4)
-        self.label5 = QLabel('Это текст для кнопки 5', self.page5)
-
         ############# PAGE 1 #########################
 
         self.label1 = QLabel('', self.page1)
-        self.time_label = QLabel("Установить лимит времени в минутах:", self.page1)
+        self.time_label = QLabel("Установить лимит времени:", self.page1)
         self.time_label.setFont(font_h1)
         self.time_label.setStyleSheet("color: rgb(255, 255, 255);")
         self.time_spinbox = QSpinBox(self.page1)
@@ -249,7 +246,75 @@ class SettingsWindow(QWidget):
 
         ################# PAGE 4 ###################
 
+        # Создаем layout для четвертой страницы
+        self.page4_layout = QVBoxLayout()
+
+        # Создаем заголовок
+        self.page4_title = QLabel("Коды для дополнительного времени")
+        self.page4_title.setStyleSheet("color: white; font-size: 24px; font-family: Oswald;")
+        self.page4_layout.addWidget(self.page4_title)
+
+        # Создаем подзаголовок
+        self.page4_subtitle = QLabel("Придумайте код:")
+        self.page4_subtitle.setStyleSheet("color: white; font-size: 18px; font-family: Oswald;")
+        self.page4_layout.addWidget(self.page4_subtitle)
+
+        # Создаем форму для ввода кода
+        self.page4_code = QLineEdit()
+        self.page4_code.setPlaceholderText("Введите код")
+        self.page4_layout.addWidget(self.page4_code)
+
+        # Создаем выпадающий список со всеми приложениями
+        self.page4_apps = QComboBox()
+        self.page4_apps.addItems(apps_list())  # Используем существующую функцию apps_list
+        self.page4_layout.addWidget(self.page4_apps)
+
+        # Создаем выбор времени со стрелками
+        self.page4_time = QTimeEdit()
+        self.page4_time.setDisplayFormat("hh:mm")
+        self.page4_time.setTime(QTime(0, 0))  # Устанавливаем начальное время 00:00
+        self.page4_layout.addWidget(self.page4_time)
+
+        # Создаем кнопку "Добавить код"
+        self.page4_add = QPushButton("Добавить код")
+        self.page4_add.setFont(font_button)
+        self.page4_add.setStyleSheet(
+            "border-radius: 10px;color: rgb(255, 255, 255);background-color: qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:1.33, fx:0.5, fy:0.5, stop:0 rgba(26, 95, 146, 255), stop:1 rgba(255, 255, 255, 0));")
+        self.page4_add.clicked.connect(self.add_code)  # Связываем кнопку с функцией add_code
+        self.page4_layout.addWidget(self.page4_add)
+
+        # Создаем таблицу с данными из code.json
+        self.page4_table = QTableWidget()
+        self.page4_table.setColumnCount(3)  # Устанавливаем три столбца
+        self.page4_table.setHorizontalHeaderLabels(["Код", "Приложение", "Время"])  # Устанавливаем заголовки столбцов
+        self.page4_table.horizontalHeader().setSectionResizeMode(
+            QHeaderView.ResizeMode.Stretch)  # Растягиваем столбцы по ширине
+        self.page4_table.setSelectionBehavior(
+            QAbstractItemView.SelectionBehavior.SelectRows)  # Устанавливаем выделение по строкам
+        self.page4_table.setSelectionMode(
+            QAbstractItemView.SelectionMode.SingleSelection)  # Устанавливаем одиночное выделение
+        self.page4_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)  # Отключаем редактирование ячеек
+        self.page4_table.verticalHeader().hide()  # Скрываем вертикальные заголовки
+        self.page4_table.setRowCount(0)  # Устанавливаем нулевое количество строк
+        self.page4_layout.addWidget(self.page4_table)
+
+        # Создаем кнопку "Удалить"
+        self.page4_delete = QPushButton("Удалить код")
+        self.page4_delete.setFont(font_button)
+        self.page4_delete.setStyleSheet(
+            "border-radius: 10px;color: rgb(255, 255, 255);background-color: qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:1.33, fx:0.5, fy:0.5, stop:0 rgba(26, 95, 146, 255), stop:1 rgba(255, 255, 255, 0));")
+        self.page4_delete.clicked.connect(self.delete_code)  # Связываем кнопку с функцией delete_code
+        self.page4_layout.addWidget(self.page4_delete)
+
+        # Устанавливаем layout для четвертой страницы
+        self.page4.setLayout(self.page4_layout)
+
+        # Загружаем данные из code.json в таблицу
+        self.load_data()
+
         ################# PAGE 5 ###################
+
+        ########################################
 
         # Связываем кнопки с функциями, которые переключают страницы
         self.button1.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(0))
@@ -275,6 +340,80 @@ class SettingsWindow(QWidget):
         self.setFixedSize(840, 580)
 
         self.show()
+
+    def add_code(self):
+        # Получаем введенный код, выбранное приложение и время
+        code = self.page4_code.text()
+        app = self.page4_apps.currentText()
+        time = self.page4_time.time().toString("hh:mm")
+
+        # Проверяем, что код не пустой
+        if code:
+            # Открываем файл code.json для чтения и записи
+            with open("code.json", "r+") as f:
+                # Загружаем данные из файла в словарь
+                data = json.load(f)
+                # Добавляем или обновляем данные по коду
+                data[code] = {"Приложение": app, "Время": time}
+                # Перемещаем указатель в начало файла
+                f.seek(0)
+                # Записываем обновленный словарь в файл
+                json.dump(data, f, ensure_ascii=False, indent=4)
+                # Обрезаем файл до текущего размера
+                f.truncate()
+            # Очищаем поле ввода кода
+            self.page4_code.clear()
+            # Обновляем таблицу с данными
+            self.load_data()
+        else:
+            # Выводим сообщение об ошибке
+            print("Код не может быть пустым")
+
+    def delete_code(self):
+        # Получаем индекс выделенной строки
+        row = self.page4_table.currentRow()
+        # Проверяем, что строка выделена
+        if row != -1:
+            # Получаем код из первой ячейки строки
+            code = self.page4_table.item(row, 0).text()
+            # Открываем файл code.json для чтения и записи
+            with open("code.json", "r+") as f:
+                # Загружаем данные из файла в словарь
+                data = json.load(f)
+                # Удаляем данные по коду
+                data.pop(code, None)
+                # Перемещаем указатель в начало файла
+                f.seek(0)
+                # Записываем обновленный словарь в файл
+                json.dump(data, f, ensure_ascii=False, indent=4)
+                # Обрезаем файл до текущего размера
+                f.truncate()
+            # Обновляем таблицу с данными
+            self.load_data()
+        else:
+            # Выводим сообщение об ошибке
+            print("Нет выделенной строки")
+
+    def load_data(self):
+        # Открываем файл code.json для чтения
+        with open("code.json", "r") as f:
+            # Загружаем данные из файла в словарь
+            data = json.load(f)
+            # Устанавливаем количество строк в таблице равное количеству кодов
+            self.page4_table.setRowCount(len(data))
+            # Проходим по всем кодам в словаре
+            for i, code in enumerate(data):
+                # Получаем приложение и время по коду
+                app = data[code]["Приложение"]
+                time = data[code]["Время"]
+                # Создаем ячейки с кодом, приложением и временем
+                code_item = QTableWidgetItem(code)
+                app_item = QTableWidgetItem(app)
+                time_item = QTableWidgetItem(time)
+                # Добавляем ячейки в соответствующие столбцы и строки таблицы
+                self.page4_table.setItem(i, 0, code_item)
+                self.page4_table.setItem(i, 1, app_item)
+                self.page4_table.setItem(i, 2, time_item)
 
     def p3_color_picker(self):
         # Откройте диалог выбора цвета и получите выбранный цвет
