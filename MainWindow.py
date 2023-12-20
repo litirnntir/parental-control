@@ -143,12 +143,12 @@ class MainWindow(QMainWindow):
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_data)
         self.timer.start(1000)
-        self.active_app = None
+        self.active_app = get_from_json("settings.json")['total_time'] * 60
 
         self.time_left_block_app = 0  # Сколько времени осталось у заблокированного приложения
         self.time_spent = 0  # Времени проведено в приложении
 
-        self.total_time = get_from_json("settings.json")['total_time']  # секунд - хранение общего времени
+        self.total_time = get_from_json("settings.json")['total_time'] * 60  # секунд - хранение общего времени
         self.total_time_for_percents = get_from_json("settings.json")[
             'total_time_for_percents']  # Переменная для создания бара
         self.password = get_from_json  # # для хранения пароля
