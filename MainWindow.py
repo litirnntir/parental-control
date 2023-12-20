@@ -1,6 +1,7 @@
 import json
 import os
 import time
+import requests
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import QTimer
@@ -11,6 +12,25 @@ from QMessages import incorrect_password
 from SettingsWindow import SettingsWindow
 from system_functions import (close_app, get_active_app_name, get_from_json,
                               get_open_apps, send_notification)
+
+
+def is_time_eq(target_time):
+    # Отправляем запрос к World Time API, чтобы получить текущее время в Нью-Йорке
+    response = requests.get("http://worldtimeapi.org/api/timezone/Europe/Samara")
+    # Проверяем, что ответ успешный
+    if response.status_code == 200:
+        # Извлекаем текущее время из ответа в формате "HH:MM:SS"
+        current_time = response.json()["datetime"][11:19]
+        # Сравниваем текущее время с нужным временем
+        if current_time == target_time:
+            # Возвращаем True, если текущее время больше нужного
+            return True
+        else:
+            # Возвращаем False, если текущее время меньше или равно нужному
+            return False
+    else:
+        # Возвращаем None, если ответ неуспешный
+        return None
 
 
 class MainWindow(QMainWindow):
@@ -249,7 +269,11 @@ class MainWindow(QMainWindow):
                 self.break_json = 24 * 60 * 60  # интервал отправки предупреждения о взломе
         else:
             self.break_json = None
-        print(self.break_json)
+
+        if is_time_eq(get_from_json("settings.json")['send_stats_time']):
+            print("Статистика обновлена")
+            with open("stats_apps.json", "w") as f:
+                json.dump({}, f)
         self.blocked_apps = get_from_json("blocked_apps.json")
         self.blocked_apps_for_percents = get_from_json("blocked_apps_for_percents.json")
         current_app = get_active_app_name()
