@@ -170,7 +170,7 @@ class SettingsWindow(QWidget):
         self.set_limit.setFont(font_button)
         self.set_limit.setStyleSheet(
             "border-radius: 10px;color: rgb(255, 255, 255);background-color: qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:1.33, fx:0.5, fy:0.5, stop:0 rgba(26, 95, 146, 255), stop:1 rgba(255, 255, 255, 0));")
-        self.set_limit.clicked.connect(self.page2_set_limit_clicked)
+        self.set_limit.clicked.connect(self.p2_set_limit_clicked)
         self.page2_layout.addWidget(self.set_limit)
 
         self.table = QTableWidget()
@@ -222,7 +222,7 @@ class SettingsWindow(QWidget):
         self.color_button.setStyleSheet(
             "border-radius: 10px;color: rgb(255, 255, 255);background-color: qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:1.33, fx:0.5, fy:0.5, stop:0 rgba(26, 95, 146, 255), stop:1 rgba(255, 255, 255, 0));")
         # Подключите сигнал нажатия кнопки к слоту color_picker
-        self.color_button.clicked.connect(self.color_picker)
+        self.color_button.clicked.connect(self.p3_color_picker)
         # Добавьте кнопку в ваш макет
         self.page3_layout.addWidget(self.color_button)
 
@@ -239,12 +239,12 @@ class SettingsWindow(QWidget):
         self.reset_button.setFont(font_button)
         self.reset_button.setStyleSheet(
             "border-radius: 10px;color: rgb(255, 255, 255);background-color: qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:1.33, fx:0.5, fy:0.5, stop:0 rgba(26, 95, 146, 255), stop:1 rgba(255, 255, 255, 0));")
-        self.reset_button.clicked.connect(self.reset_stats)
+        self.reset_button.clicked.connect(self.p2_reset_stats)
 
         self.page3_layout.addWidget(self.reset_button)
 
         self.update_timer = QTimer()
-        self.update_timer.timeout.connect(self.update_data)
+        self.update_timer.timeout.connect(self.p3_update_data)
         self.update_timer.start(1000)
 
         ################# PAGE 4 ###################
@@ -276,14 +276,14 @@ class SettingsWindow(QWidget):
 
         self.show()
 
-    def color_picker(self):
+    def p3_color_picker(self):
         # Откройте диалог выбора цвета и получите выбранный цвет
         color = QColorDialog.getColor()
         # Если цвет был выбран, установите его в качестве цвета фона для диаграммы
         if color.isValid():
             self.chart.setBackgroundBrush(QBrush(color))
 
-    def update_data(self):
+    def p3_update_data(self):
         with open("stats_apps.json", "r") as f:
             stats = json.load(f)
 
@@ -305,14 +305,14 @@ class SettingsWindow(QWidget):
 
         self.chart.addSeries(self.series)
 
-    def reset_stats(self):
+    def p2_reset_stats(self):
         with open("stats_apps.json", "w") as f:
             json.dump({}, f)
 
         self.series.clear()
         self.timer.display("00:00:00")
 
-    def page2_set_limit_clicked(self):
+    def p2_set_limit_clicked(self):
         import json
         app2 = self.combo.currentText()
         time2 = self.time.time().toString("hh:mm")

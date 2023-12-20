@@ -1,4 +1,5 @@
 import json
+import os
 import time
 
 from PyQt6 import QtCore, QtGui, QtWidgets
@@ -10,7 +11,6 @@ from QMessages import incorrect_password
 from SettingsWindow import SettingsWindow
 from system_functions import (close_app, get_active_app_name, get_from_json,
                               get_open_apps, send_notification)
-
 
 
 class MainWindow(QMainWindow):
