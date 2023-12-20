@@ -232,11 +232,8 @@ class MainWindow(QMainWindow):
         f.close()
 
     def update_data(self):
-        # TODO: проверка на изменение json
-        print(get_from_json("settings.json")['total_time'] * 60)
-        print(self.total_time)
-        if (get_from_json("settings.json")['total_time'] - self.total_time) > 5:
-            print("Json взломали")
+        if get_from_json("settings.json")['total_time'] != self.total_time_for_percents:
+            print("json взломали")
         self.blocked_apps = get_from_json("blocked_apps.json")
         self.blocked_apps_for_percents = get_from_json("blocked_apps_for_percents.json")
         current_app = get_active_app_name()
