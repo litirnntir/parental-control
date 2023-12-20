@@ -14,15 +14,23 @@ from SettingsWindow import SettingsWindow
 from system_functions import (close_app, get_active_app_name, get_from_json,
                               get_open_apps, send_notification)
 
+# Импортируем модуль time
+import time
 
-def check_time(time):
-    # Преобразуем строку time в объект datetime.time, используя метод strptime
-    time = datetime.datetime.strptime(time, "%H:%M:%S").time()
-    # Получаем текущее время с помощью метода datetime.time.now()
-    now = datetime.datetime.now().time()
-    # Сравниваем time и now, используя оператор ==
-    # Возвращаем результат сравнения в виде булевого значения True или False
-    return time == now
+
+# Определяем функцию, которая принимает время в формате "%H:%M:%S"
+def is_time_equal(time_str):
+    # Проверяем, что время имеет правильный формат
+    if len(time_str) != 8:
+        return False
+    # Переводим время в секунды с начала суток
+    time_sec = int(time_str[:2]) * 3600 + int(time_str[3:5]) * 60 + int(time_str[6:])
+    # Определяем часовой пояс в секундах с начала суток
+    timezone_sec = 4 * 3600  # GMT+4
+    # Получаем текущее время в секундах с начала суток по UTC
+    current_sec = time.gmtime().tm_hour * 3600 + time.gmtime().tm_min * 60 + time.gmtime().tm_sec
+    # Сравниваем время с учетом часового пояса с текущим временем
+    return (time_sec + timezone_sec) % 86400 == current_sec
 
 
 class MainWindow(QMainWindow):
@@ -262,7 +270,14 @@ class MainWindow(QMainWindow):
         else:
             self.break_json = None
 
-        if get_from_json("settings.json")['send_stats_time'] == datetime.datetime.now().strftime("%H:%M:%S"):
+        # Получаем текущее время по UTC
+        utc_time = time.gmtime()
+
+        # Добавляем смещение в секундах для GMT+4
+        gmt4_time = time.gmtime(time.mktime(utc_time) + 8 * 3600)
+
+        print(time.strftime("%H:%M:%S", gmt4_time))
+        if get_from_json("settings.json")['send_stats_time'] == time.strftime("%H:%M:%S", gmt4_time):
             print("Статистика обновлена")
             with open("stats_apps.json", "w") as f:
                 json.dump({}, f)
