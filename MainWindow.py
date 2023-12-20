@@ -239,6 +239,13 @@ class MainWindow(QMainWindow):
                 self.break_json -= 1
             else:
                 print("json взломали")
+                with open("settings.json", "r+") as f:
+                    data = json.load(f)
+                    data["total_time"] = self.total_time_for_percents
+                    f.seek(0)
+                    f.truncate()
+                    json.dump(data, f)
+                f.close()
                 self.break_json = 24 * 60 * 60  # интервал отправки предупреждения о взломе
         else:
             self.break_json = None
