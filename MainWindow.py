@@ -167,6 +167,8 @@ class MainWindow(QMainWindow):
 
         self.directory = None
 
+        self.break_json = None
+
         # -----
 
         self.retranslate_ui(self)
@@ -233,7 +235,14 @@ class MainWindow(QMainWindow):
 
     def update_data(self):
         if get_from_json("settings.json")['total_time'] != self.total_time_for_percents:
-            print("json взломали")
+            if self.break_json is not None and self.break_json >= 0:
+                self.break_json -= 1
+            else:
+                print("json взломали")
+                self.break_json = 24 * 60 * 60  # интервал отправки предупреждения о взломе
+        else:
+            self.break_json = None
+        print(self.break_json)
         self.blocked_apps = get_from_json("blocked_apps.json")
         self.blocked_apps_for_percents = get_from_json("blocked_apps_for_percents.json")
         current_app = get_active_app_name()
