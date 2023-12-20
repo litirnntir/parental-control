@@ -38,6 +38,10 @@ class SettingsWindow(QWidget):
         font_button.setFamily("Oswald")
         font_button.setPointSize(24)
 
+        font_small_button = QtGui.QFont()
+        font_small_button.setFamily("Oswald")
+        font_small_button.setPointSize(18)
+
         font_h1 = QtGui.QFont()
         font_h1.setFamily("Oswald")
         font_h1.setPointSize(24)
@@ -255,7 +259,7 @@ class SettingsWindow(QWidget):
         self.page4_layout.addWidget(self.page4_title)
 
         # Создаем подзаголовок
-        self.page4_subtitle = QLabel("Придумайте код:")
+        self.page4_subtitle = QLabel("Код для приложения:")
         self.page4_subtitle.setStyleSheet("color: white; font-size: 18px; font-family: Oswald;")
         self.page4_layout.addWidget(self.page4_subtitle)
 
@@ -277,11 +281,35 @@ class SettingsWindow(QWidget):
 
         # Создаем кнопку "Добавить код"
         self.page4_add = QPushButton("Добавить код")
-        self.page4_add.setFont(font_button)
+        self.page4_add.setFont(font_small_button)
         self.page4_add.setStyleSheet(
             "border-radius: 10px;color: rgb(255, 255, 255);background-color: qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:1.33, fx:0.5, fy:0.5, stop:0 rgba(26, 95, 146, 255), stop:1 rgba(255, 255, 255, 0));")
-        self.page4_add.clicked.connect(self.add_code)  # Связываем кнопку с функцией add_code
+        self.page4_add.clicked.connect(self.p4_add_code)  # Связываем кнопку с функцией add_code
         self.page4_layout.addWidget(self.page4_add)
+
+         # Создаем заголовок для кода для общего времени
+        self.page4_total_title = QLabel("Код для общего времени")
+        self.page4_total_title.setStyleSheet("color: white; font-size: 18px; font-family: Oswald;")
+        self.page4_layout.addWidget(self.page4_total_title)
+
+        # Создаем форму для ввода кода для общего времени
+        self.page4_total_code = QLineEdit()
+        self.page4_total_code.setPlaceholderText("Введите код")
+        self.page4_layout.addWidget(self.page4_total_code)
+
+        # Создаем выбор времени со стрелками для общего времени
+        self.page4_total_time = QTimeEdit()
+        self.page4_total_time.setDisplayFormat("hh:mm")
+        self.page4_total_time.setTime(QTime(0, 0)) # Устанавливаем начальное время 00:00
+        self.page4_layout.addWidget(self.page4_total_time)
+
+         # Создаем кнопку "Добавить код" для общего времени
+        self.page4_total_add = QPushButton("Добавить код")
+        self.page4_total_add.setFont(font_small_button)
+        self.page4_total_add.setStyleSheet(
+            "border-radius: 10px;color: rgb(255, 255, 255);background-color: qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:1.33, fx:0.5, fy:0.5, stop:0 rgba(26, 95, 146, 255), stop:1 rgba(255, 255, 255, 0));")
+        self.page4_total_add.clicked.connect(self.p4_add_total_code) # Связываем кнопку с функцией add_total_code
+        self.page4_layout.addWidget(self.page4_total_add)
 
         # Создаем таблицу с данными из code.json
         self.page4_table = QTableWidget()
@@ -303,14 +331,14 @@ class SettingsWindow(QWidget):
         self.page4_delete.setFont(font_button)
         self.page4_delete.setStyleSheet(
             "border-radius: 10px;color: rgb(255, 255, 255);background-color: qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:1.33, fx:0.5, fy:0.5, stop:0 rgba(26, 95, 146, 255), stop:1 rgba(255, 255, 255, 0));")
-        self.page4_delete.clicked.connect(self.delete_code)  # Связываем кнопку с функцией delete_code
+        self.page4_delete.clicked.connect(self.p4_delete_code)  # Связываем кнопку с функцией delete_code
         self.page4_layout.addWidget(self.page4_delete)
 
         # Устанавливаем layout для четвертой страницы
         self.page4.setLayout(self.page4_layout)
 
         # Загружаем данные из code.json в таблицу
-        self.load_data()
+        self.p4_load_data()
 
         ################# PAGE 5 ###################
 
@@ -341,7 +369,34 @@ class SettingsWindow(QWidget):
 
         self.show()
 
-    def add_code(self):
+    def p4_add_total_code(self):
+        # Получаем введенный код и время для общего времени
+        code = self.page4_total_code.text()
+        time = self.page4_total_time.time().toString("hh:mm")
+
+        # Проверяем, что код не пустой
+        if code:
+            # Открываем файл code.json для чтения и записи
+            with open("code.json", "r+") as f:
+                # Загружаем данные из файла в словарь
+                data = json.load(f)
+                # Добавляем или обновляем данные по коду для общего времени
+                data[code] = {"Приложение": 'total', "Время": time}
+                # Перемещаем указатель в начало файла
+                f.seek(0)
+                # Записываем обновленный словарь в файл
+                json.dump(data, f, ensure_ascii=False, indent=4)
+                # Обрезаем файл до текущего размера
+                f.truncate()
+            # Очищаем поле ввода кода для общего времени
+            self.page4_total_code.clear()
+            # Обновляем таблицу с данными
+            self.p4_load_data()
+        else:
+            # Выводим сообщение об ошибке
+            print("Код не может быть пустым")
+
+    def p4_add_code(self):
         # Получаем введенный код, выбранное приложение и время
         code = self.page4_code.text()
         app = self.page4_apps.currentText()
@@ -364,12 +419,12 @@ class SettingsWindow(QWidget):
             # Очищаем поле ввода кода
             self.page4_code.clear()
             # Обновляем таблицу с данными
-            self.load_data()
+            self.p4_load_data()
         else:
             # Выводим сообщение об ошибке
             print("Код не может быть пустым")
 
-    def delete_code(self):
+    def p4_delete_code(self):
         # Получаем индекс выделенной строки
         row = self.page4_table.currentRow()
         # Проверяем, что строка выделена
@@ -389,12 +444,12 @@ class SettingsWindow(QWidget):
                 # Обрезаем файл до текущего размера
                 f.truncate()
             # Обновляем таблицу с данными
-            self.load_data()
+            self.p4_load_data()
         else:
             # Выводим сообщение об ошибке
             print("Нет выделенной строки")
 
-    def load_data(self):
+    def p4_load_data(self):
         # Открываем файл code.json для чтения
         with open("code.json", "r") as f:
             # Загружаем данные из файла в словарь
