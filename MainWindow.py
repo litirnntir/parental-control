@@ -1,8 +1,4 @@
-import datetime
 import json
-import os
-import time
-import requests
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import QTimer
@@ -276,7 +272,6 @@ class MainWindow(QMainWindow):
         # Добавляем смещение в секундах для GMT+4
         gmt4_time = time.gmtime(time.mktime(utc_time) + 8 * 3600)
 
-        print(time.strftime("%H:%M:%S", gmt4_time))
         if get_from_json("settings.json")['send_stats_time'] == time.strftime("%H:%M:%S", gmt4_time):
             print("Статистика обновлена")
             with open("stats_apps.json", "w") as f:
