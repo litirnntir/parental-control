@@ -1,4 +1,5 @@
 import json
+import time
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import QTimer
@@ -9,24 +10,6 @@ from QMessages import incorrect_password
 from SettingsWindow import SettingsWindow
 from system_functions import (close_app, get_active_app_name, get_from_json,
                               get_open_apps, send_notification)
-
-# Импортируем модуль time
-import time
-
-
-# Определяем функцию, которая принимает время в формате "%H:%M:%S"
-def is_time_equal(time_str):
-    # Проверяем, что время имеет правильный формат
-    if len(time_str) != 8:
-        return False
-    # Переводим время в секунды с начала суток
-    time_sec = int(time_str[:2]) * 3600 + int(time_str[3:5]) * 60 + int(time_str[6:])
-    # Определяем часовой пояс в секундах с начала суток
-    timezone_sec = 4 * 3600  # GMT+4
-    # Получаем текущее время в секундах с начала суток по UTC
-    current_sec = time.gmtime().tm_hour * 3600 + time.gmtime().tm_min * 60 + time.gmtime().tm_sec
-    # Сравниваем время с учетом часового пояса с текущим временем
-    return (time_sec + timezone_sec) % 86400 == current_sec
 
 
 class MainWindow(QMainWindow):
