@@ -3,8 +3,8 @@ import time
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import QTimer
-from PyQt6.QtGui import QBrush, QPalette, QPixmap
-from PyQt6.QtWidgets import QLineEdit, QMainWindow, QInputDialog
+from PyQt6.QtGui import QBrush, QPalette, QPixmap, QIcon
+from PyQt6.QtWidgets import QLineEdit, QMainWindow, QInputDialog, QSystemTrayIcon, QMenu
 
 from QMessages import pop_up_message
 from SettingsWindow import SettingsWindow
@@ -172,6 +172,19 @@ class MainWindow(QMainWindow):
 
         self.retranslate_ui(self)
         QtCore.QMetaObject.connectSlotsByName(self)
+
+        # Создаем значок в области уведомлений
+        self.tray_icon = QSystemTrayIcon(self)
+        self.tray_icon.setIcon(QIcon('croak-logo.png'))  # Задаем иконку для значка
+        self.tray_icon.setToolTip('Time Tracker')  # Задаем подсказку для значка
+        # Создаем меню для значка
+        self.tray_menu = QMenu()
+        self.tray_menu.addAction('Показать окно', self.show)  # Добавляем действие для показа окна
+        self.tray_menu.addAction('Скрыть окно', self.hide)  # Добавляем действие для показа окна
+        self.tray_menu.addAction('Настройки', self.openSettings)  # Добавляем действие для показа окна
+        self.tray_menu.addAction('Выйти', self.close)  # Добавляем действие для выхода из приложения
+        self.tray_icon.setContextMenu(self.tray_menu)  # Устанавливаем меню для значка
+        self.tray_icon.show()  # Показываем значок
 
     def retranslate_ui(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
