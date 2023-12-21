@@ -13,7 +13,7 @@ from PyQt6.QtWidgets import (QWidget, QPushButton, QStackedWidget, QVBoxLayout, 
                              QLCDNumber, QColorDialog)
 
 import settings
-from QMessages import incorrect_password, correct_change_password, correct
+from QMessages import pop_up_message
 from system_functions import apps_list, get_from_json
 
 
@@ -287,7 +287,7 @@ class SettingsWindow(QWidget):
         self.page4_add.clicked.connect(self.p4_add_code)  # Связываем кнопку с функцией add_code
         self.page4_layout.addWidget(self.page4_add)
 
-         # Создаем заголовок для кода для общего времени
+        # Создаем заголовок для кода для общего времени
         self.page4_total_title = QLabel("Код для общего времени")
         self.page4_total_title.setStyleSheet("color: white; font-size: 18px; font-family: Oswald;")
         self.page4_layout.addWidget(self.page4_total_title)
@@ -300,15 +300,15 @@ class SettingsWindow(QWidget):
         # Создаем выбор времени со стрелками для общего времени
         self.page4_total_time = QTimeEdit()
         self.page4_total_time.setDisplayFormat("hh:mm")
-        self.page4_total_time.setTime(QTime(0, 0)) # Устанавливаем начальное время 00:00
+        self.page4_total_time.setTime(QTime(0, 0))  # Устанавливаем начальное время 00:00
         self.page4_layout.addWidget(self.page4_total_time)
 
-         # Создаем кнопку "Добавить код" для общего времени
+        # Создаем кнопку "Добавить код" для общего времени
         self.page4_total_add = QPushButton("Добавить код")
         self.page4_total_add.setFont(font_small_button)
         self.page4_total_add.setStyleSheet(
             "border-radius: 10px;color: rgb(255, 255, 255);background-color: qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:1.33, fx:0.5, fy:0.5, stop:0 rgba(26, 95, 146, 255), stop:1 rgba(255, 255, 255, 0));")
-        self.page4_total_add.clicked.connect(self.p4_add_total_code) # Связываем кнопку с функцией add_total_code
+        self.page4_total_add.clicked.connect(self.p4_add_total_code)  # Связываем кнопку с функцией add_total_code
         self.page4_layout.addWidget(self.page4_total_add)
 
         # Создаем таблицу с данными из code.json
@@ -524,7 +524,7 @@ class SettingsWindow(QWidget):
             json.dump(data, file)
         self.p2_update_table()
         self.main_window.update_settings()
-        correct(f"Лимит для {app2} установлен")
+        pop_up_message(text=f"Лимит для {app2} установлен", icon_path="check_icon.png", title="Успешно")
 
     def p2_update_table(self):
         import json
@@ -565,7 +565,7 @@ class SettingsWindow(QWidget):
         hours = value // 60
         minutes = value % 60
         timee = QTime(hours, minutes)
-        self.time_label.setText(f"Установить лимит времени в минутах: {timee.toString(self.time_format)}")
+        self.time_label.setText(f"Установить лимит времени: {timee.toString(self.time_format)}")
 
         with open("settings.json", "r+") as f:
             data = json.load(f)
@@ -581,7 +581,9 @@ class SettingsWindow(QWidget):
         settings.total_time = self.time_spinbox.value() * 60
         self.main_window.update_settings()
         t = time.gmtime(self.total_time)
-        correct(f'Лимит общего времени изменился на {time.strftime("%H:%M", t)}')
+        pop_up_message(text=f'Лимит общего времени изменился на {time.strftime("%H:%M", t)}',
+                       icon_path="check_icon.png",
+                       title="Успешно")
 
     def p1_change_password(self):
         old_password = self.old_password_edit.text()
@@ -596,9 +598,11 @@ class SettingsWindow(QWidget):
             if old_password == data["password"]:
                 self.password = new_password
                 data["password"] = self.password
-                correct_change_password()
+                pop_up_message(text="Пароль изменен.", icon_path="correct_password.png",
+                               title="Успешно")
             else:
-                incorrect_password()
+                pop_up_message(text="Неверный пароль! Попробуйте еще раз.", icon_path="incorrect_password.png",
+                               title="Ошибка")
 
             f.seek(0)
             json.dump(data, f)

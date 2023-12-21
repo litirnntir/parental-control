@@ -6,7 +6,7 @@ from PyQt6.QtCore import QTimer
 from PyQt6.QtGui import QBrush, QPalette, QPixmap
 from PyQt6.QtWidgets import QLineEdit, QMainWindow, QInputDialog
 
-from QMessages import incorrect_password
+from QMessages import pop_up_message
 from SettingsWindow import SettingsWindow
 from system_functions import (close_app, get_active_app_name, get_from_json,
                               get_open_apps, send_notification)
@@ -201,7 +201,8 @@ class MainWindow(QMainWindow):
                     self.settings_window.close()
                 event.accept()
             else:
-                incorrect_password()
+                pop_up_message(text="Неверный пароль! Попробуйте еще раз.", icon_path="incorrect_password.png",
+                               title="Ошибка")
                 event.ignore()
         f.close()
 
@@ -220,7 +221,8 @@ class MainWindow(QMainWindow):
                 self.settings_window = SettingsWindow(self)
                 self.settings_window.show()
             else:
-                incorrect_password()
+                pop_up_message(text="Неверный пароль! Попробуйте еще раз.", icon_path="incorrect_password.png",
+                               title="Ошибка")
         f.close()
 
     def update_settings(self):
