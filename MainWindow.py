@@ -144,14 +144,13 @@ class MainWindow(QMainWindow):
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_data)
         self.timer.start(1000)
-        self.active_app = get_from_json("settings.json")['total_time'] * 60
+        self.active_app = get_from_json("settings.json")['total_time']
 
         self.time_left_block_app = 0  # Сколько времени осталось у заблокированного приложения
         self.time_spent = 0  # Времени проведено в приложении
 
-        self.total_time = get_from_json("settings.json")['total_time'] * 60  # секунд - хранение общего времени
-        self.total_time_for_percents = get_from_json("settings.json")[
-            'total_time']  # Переменная для создания бара
+        self.total_time = get_from_json("settings.json")['total_time']  # секунд - хранение общего времени
+        self.total_time_for_percents = get_from_json("settings.json")['total_time']
         self.password = get_from_json  # # для хранения пароля
 
         self.blocked_apps = get_from_json("blocked_apps.json")
@@ -245,15 +244,16 @@ class MainWindow(QMainWindow):
         f.close()
 
     def update_settings(self):
-        with open("settings.json") as f:
+        with open("settings.json", "r") as f:
             data = json.load(f)
             self.password = data["password"]
-            self.total_time = data["total_time"] * 60
-            self.total_time_for_percents = data["total_time"] * 60
+            self.total_time = data["total_time"]
+            self.total_time_for_percents = data["total_time"]
             self.directory = data["directory"]
         f.close()
 
     def update_data(self):
+        print(get_from_json("settings.json")['total_time'], "|", self.total_time_for_percents)
         if get_from_json("settings.json")['total_time'] != self.total_time_for_percents:
             if self.break_json is not None and self.break_json >= 0:
                 self.break_json -= 1

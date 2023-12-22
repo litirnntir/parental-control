@@ -22,6 +22,7 @@ class SettingsWindow(QWidget):
         super().__init__()
 
         self.main_window = parent
+        self.total_time = get_from_json("settings.json")["total_time"]
         self.initUI()
         self.password = get_from_json("settings.json")["password"]
 
@@ -328,7 +329,7 @@ class SettingsWindow(QWidget):
 
         # Создаем кнопку "Удалить"
         self.page4_delete = QPushButton("Удалить код")
-        self.page4_delete.setFont(font_button)
+        self.page4_delete.setFont(font_small_button)
         self.page4_delete.setStyleSheet(
             "border-radius: 10px;color: rgb(255, 255, 255);background-color: qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:1.33, fx:0.5, fy:0.5, stop:0 rgba(26, 95, 146, 255), stop:1 rgba(255, 255, 255, 0));")
         self.page4_delete.clicked.connect(self.p4_delete_code)  # Связываем кнопку с функцией delete_code
@@ -392,7 +393,7 @@ class SettingsWindow(QWidget):
                 # Загружаем данные из файла в словарь
                 data = json.load(f)
                 # Добавляем или обновляем данные по коду для общего времени
-                data[code] = {"Приложение": 'total', "Время": seconds}
+                data[code] = {"Приложение": 'Общее время', "Время": seconds}
                 # Перемещаем указатель в начало файла
                 f.seek(0)
                 # Записываем обновленный словарь в файл
@@ -584,23 +585,21 @@ class SettingsWindow(QWidget):
         self.main_window.update_settings()
 
     def p1_update_time(self, value):
+        print("v:", value)
         hours = value // 60
         minutes = value % 60
         timee = QTime(hours, minutes)
         self.time_label.setText(f"Установить лимит времени: {timee.toString(self.time_format)}")
+        self.total_time = value * 60
 
+    def p1_select_time(self):
         with open("settings.json", "r+") as f:
             data = json.load(f)
-            data["total_time"] = value
+            data["total_time"] = self.total_time
             f.seek(0)
             f.truncate()
             json.dump(data, f)
         f.close()
-        self.main_window.update_settings()
-
-    def p1_select_time(self):
-        self.total_time = self.time_spinbox.value() * 60
-        settings.total_time = self.time_spinbox.value() * 60
         self.main_window.update_settings()
         t = time.gmtime(self.total_time)
         pop_up_message(text=f'Лимит общего времени изменился на {time.strftime("%H:%M", t)}',
