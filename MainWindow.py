@@ -269,7 +269,7 @@ class MainWindow(QMainWindow):
         file.close()
 
     def send_to_telegram(self, text="Текст"):
-        bot.send_message(chat_id, "Привет")
+        bot.send_message(chat_id, text)
 
     def update_data(self):
         if get_from_json("settings.json")['total_time'] != self.total_time_for_percents:

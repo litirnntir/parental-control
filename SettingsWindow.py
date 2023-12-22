@@ -433,7 +433,7 @@ class SettingsWindow(QWidget):
         return total_time
 
     def p5_save_stats_to_file(self):
-        save_stats_to_file(self)
+        save_stats_to_file()
         pop_up_message('Статистика сохранена', title="Успешно!")
 
     def p4_add_total_code(self):

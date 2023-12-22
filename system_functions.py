@@ -17,13 +17,13 @@ def format_time(seconds):
     return f"{hours}:{minutes:02d}:{seconds:02d}"  # Форматируем строку с нулями слева для минут и секунд
 
 
-def save_stats_to_file(self):
+def save_stats_to_file():
     with open("settings.json", "r") as f:
         data = json.load(f)
-        self.directory = data["directory"] + "/stats.txt"
+        directory = data["directory"] + "/stats.txt"
 
     with open("stats_apps.json", "r") as f:
-        self.stats_apps = json.load(f)
+        stats_apps = json.load(f)
 
     # Создаем новую книгу excel
     wb = openpyxl.Workbook()
@@ -31,7 +31,7 @@ def save_stats_to_file(self):
     # Получаем активный лист
     ws = wb.active
 
-    data = self.stats_apps
+    data = stats_apps
 
     # Проходим по словарю и записываем данные построчно в лист
     row = 1  # Номер строки
