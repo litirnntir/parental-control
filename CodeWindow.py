@@ -1,7 +1,5 @@
-import sys
 import json
-from PyQt6 import QtWidgets, QtGui
-from PyQt6.QtCore import QTime
+from PyQt6 import QtWidgets
 
 
 class CodeWindow(QtWidgets.QDialog):
