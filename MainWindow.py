@@ -10,6 +10,7 @@ from QMessages import pop_up_message
 from SettingsWindow import SettingsWindow
 from system_functions import (close_app, get_active_app_name, get_from_json,
                               get_open_apps, send_notification)
+from CodeWindow import CodeWindow
 
 
 class MainWindow(QMainWindow):
@@ -80,6 +81,7 @@ class MainWindow(QMainWindow):
                                            "border-radius: 20px;   \n"
                                            "background-color: qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:0.83, fx:0.5, fy:0.5, stop:0 rgba(42, 146, 224, 255), stop:1 rgba(255, 255, 255, 0));")
         self.button_add_time.setObjectName("button_add_time")
+        self.button_add_time.clicked.connect(self.open_code_window)
         self.text_all_time = QtWidgets.QLabel(parent=self.centralwidget)
         self.text_all_time.setGeometry(QtCore.QRect(70, 90, 371, 61))
         font = QtGui.QFont()
@@ -197,6 +199,10 @@ class MainWindow(QMainWindow):
         self.time_all_time.setText(_translate("MainWindow", time.strftime("%H:%M:%S", time.gmtime(self.total_time))))
         self.time_active_app.setText(
             _translate("MainWindow", time.strftime("%H:%M:%S", time.gmtime(self.time_left_block_app))))
+
+    def open_code_window(self):
+        self.code_window = CodeWindow(self)
+        self.code_window.show()
 
     def closeEvent(self, event):
         dialog = QInputDialog(self)
