@@ -364,7 +364,7 @@ class MainWindow(QMainWindow):
                                                          100 * self.total_time / self.total_time_for_percents)
             self.progress_bar_all_time.setProperty("value", 100 * self.total_time / self.total_time_for_percents)
         elif self.total_time < 1 and self.flag:
-            if current_app != "python" and current_app != "pycharm" and current_app != "Croak - Child Lock":
+            if current_app != "Python" and current_app != "pycharm" and current_app != "Croak - Child Lock":
                 send_notification(f"Общее время вышло. Вы больше не можете зайти в {current_app}")
                 close_app(current_app)
                 apps_list = get_open_apps()

@@ -1,14 +1,12 @@
-import datetime
 import json
 import time
 
-import openpyxl as openpyxl
 from PyQt6 import QtGui
 from PyQt6.QtCharts import QChart, QChartView, QPieSeries
 from PyQt6.QtCore import Qt, QTime, QTimer
 from PyQt6.QtGui import QColor, QPainter
 from PyQt6.QtGui import QPixmap, QBrush, QPalette
-from PyQt6.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication, QMessageBox
 from PyQt6.QtWidgets import (QWidget, QPushButton, QStackedWidget, QVBoxLayout, QHBoxLayout, QLabel,
                              QSpinBox, QLineEdit, QFormLayout, QFileDialog, QTableWidget, QHeaderView,
                              QAbstractItemView, QTimeEdit, QComboBox, QTableWidgetItem,
@@ -345,6 +343,21 @@ class SettingsWindow(QWidget):
 
         # В методе initUI добавьте следующие строки
         # Создаем заголовок для пятой страницы
+
+        self.page5_bot_title = QLabel("Получите код из бота @croackchildlockbot по команде /id"
+                                      "и впишите его в форму ниже")
+        self.page5_bot_title.setStyleSheet("color: white; font-size: 24px; font-family: Oswald;")
+        # Создаем форму для ввода кода
+        self.page5_code_edit = QLineEdit()
+        self.page5_code_edit.setFixedSize(800, 50)
+        # Создаем кнопку для подтверждения кода
+        self.page5_confirm_button = QPushButton("Подтвердить")
+        self.page5_confirm_button.setFont(font_button)
+        self.page5_confirm_button.setStyleSheet(
+            "border-radius: 10px;color: rgb(255, 255, 255);background-color: qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:1.33, fx:0.5, fy:0.5, stop:0 rgba(26, 95, 146, 255), stop:1 rgba(255, 255, 255, 0));")
+        # Связываем кнопку с методом self.p5_confirm
+        self.page5_confirm_button.clicked.connect(self.p5_confirm)
+
         self.page5_title = QLabel("Сохранить или отправить статистику")
         self.page5_title.setStyleSheet("color: white; font-size: 24px; font-family: Oswald;")
         # Создаем кнопку для сохранения статистики
@@ -360,13 +373,17 @@ class SettingsWindow(QWidget):
         self.page5_send.setStyleSheet(
             "border-radius: 10px;color: rgb(255, 255, 255);background-color: qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:1.33, fx:0.5, fy:0.5, stop:0 rgba(26, 95, 146, 255), stop:1 rgba(255, 255, 255, 0));")
         # Связываем кнопку с методом self.p5_save
-        self.page5_send.clicked.connect(self.main_window.send_to_telegram)
+        self.page5_send.clicked.connect(self.main_window.send_file_to_telegram)
 
         # Создаем вертикальный layout для пятой страницы
         self.page5_layout = QVBoxLayout()
         # Добавляем заголовок и кнопку в layout
         self.page5_layout.addWidget(self.page5_title)
         self.page5_layout.addWidget(self.page5_button)
+        self.page5_layout.addWidget(self.page5_send)
+        self.page5_layout.addWidget(self.page5_bot_title)
+        self.page5_layout.addWidget(self.page5_code_edit)
+        self.page5_layout.addWidget(self.page5_confirm_button)
         # Устанавливаем layout для пятой страницы
         self.page5.setLayout(self.page5_layout)
         # Добавляем пятую страницу в stackedWidget
@@ -398,6 +415,16 @@ class SettingsWindow(QWidget):
         self.setFixedSize(840, 580)
 
         self.show()
+
+    def p5_confirm(self):
+        # Получаем код из формы
+        code = self.page5_code_edit.text()
+        with open("settings.json", "r") as f:
+            data = json.load(f)
+        data["chat_id"] = code
+        with open("settings.json", "w") as f:
+            json.dump(data, f)
+        pop_up_message("Код записан", title="Успешно")
 
     def p5_total_app_time(self, app_dict):
         total_time = 0
