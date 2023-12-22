@@ -22,7 +22,7 @@ OPTIONS = {
         'NSHumanReadableCopyright': 'Copyright (c) 2023 Gorbuntsova A.A., All rights reserves'
     },
     'iconfile': 'croak-logo.icns',
-    'packages': ['PyQt6', 'osascript', 'PyQt6-Charts', 'PyQt6-Charts-Qt6', 'requests']
+    'packages': ['PyQt6', 'osascript', 'PyQt6-Charts', 'PyQt6-Charts-Qt6', 'requests', 'openpyxl']
 }
 
 setup(

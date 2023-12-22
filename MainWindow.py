@@ -252,13 +252,18 @@ class MainWindow(QMainWindow):
             self.directory = data["directory"]
         f.close()
 
+    def send_stats(self):
+        pass
+
+    def send_hack_message(self, text):
+        pass
+
     def update_data(self):
-        print(get_from_json("settings.json")['total_time'], "|", self.total_time_for_percents)
         if get_from_json("settings.json")['total_time'] != self.total_time_for_percents:
             if self.break_json is not None and self.break_json >= 0:
                 self.break_json -= 1
             else:
-                print("json взломали")
+                self.send_hack_message("json взломали")
                 with open("settings.json", "r+") as f:
                     data = json.load(f)
                     data["total_time"] = self.total_time_for_percents
@@ -277,7 +282,7 @@ class MainWindow(QMainWindow):
         gmt4_time = time.gmtime(time.mktime(utc_time) + 8 * 3600)
 
         if get_from_json("settings.json")['send_stats_time'] == time.strftime("%H:%M:%S", gmt4_time):
-            print("Статистика обновлена")
+            self.send_stats()
             with open("stats_apps.json", "w") as f:
                 json.dump({}, f)
         self.blocked_apps = get_from_json("blocked_apps.json")

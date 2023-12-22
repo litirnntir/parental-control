@@ -2,21 +2,62 @@ import json
 import subprocess
 import os
 import signal
+
+import openpyxl
 import osascript
+
+from QMessages import pop_up_message
+
+
+# Функция для преобразования секунд в формат часы:минуты:секунды
+def format_time(seconds):
+    hours = seconds // 3600  # Целочисленное деление на 3600
+    minutes = (seconds % 3600) // 60  # Остаток от деления на 3600, затем целочисленное деление на 60
+    seconds = (seconds % 3600) % 60  # Остаток от деления на 3600, затем остаток от деления на 60
+    return f"{hours}:{minutes:02d}:{seconds:02d}"  # Форматируем строку с нулями слева для минут и секунд
+
+
+def save_stats_to_file(self):
+    with open("settings.json", "r") as f:
+        data = json.load(f)
+        self.directory = data["directory"] + "/stats.txt"
+
+    with open("stats_apps.json", "r") as f:
+        self.stats_apps = json.load(f)
+
+    # Создаем новую книгу excel
+    wb = openpyxl.Workbook()
+
+    # Получаем активный лист
+    ws = wb.active
+
+    data = self.stats_apps
+
+    # Проходим по словарю и записываем данные построчно в лист
+    row = 1  # Номер строки
+    for app, time in data.items():
+        ws.cell(row=row, column=1).value = app  # Записываем название приложения в первый столбец
+        ws.cell(row=row, column=2).value = format_time(
+            time)  # Записываем время во второй столбец в формате часы:минуты:секунды
+        row += 1  # Переходим на следующую строку
+
+    # Сохраняем книгу excel в файл
+    wb.save("data.xlsx")
 
 
 def get_from_json(file_name):
-        with open(str(file_name), "r") as file:
-            # Загружаем данные из файла в переменную data
-            data = json.load(file)
-        # Присваиваем переменную data словарю self.blocked_apps
-        return data
+    with open(str(file_name), "r") as file:
+        # Загружаем данные из файла в переменную data
+        data = json.load(file)
+    # Присваиваем переменную data словарю self.blocked_apps
+    return data
 
 
 def send_notification(text):
     osascript.run("defaults write com.apple.notificationcenterui bannerTime 2")
     command = f'display notification "{text}" with title "Croak"'
     osascript.run(command)
+
 
 def apps_list():
     apps = []

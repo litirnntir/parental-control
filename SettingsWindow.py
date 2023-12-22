@@ -1,6 +1,8 @@
+import datetime
 import json
 import time
 
+import openpyxl as openpyxl
 from PyQt6 import QtGui
 from PyQt6.QtCharts import QChart, QChartView, QPieSeries
 from PyQt6.QtCore import Qt, QTime, QTimer
@@ -11,10 +13,8 @@ from PyQt6.QtWidgets import (QWidget, QPushButton, QStackedWidget, QVBoxLayout, 
                              QSpinBox, QLineEdit, QFormLayout, QFileDialog, QTableWidget, QHeaderView,
                              QAbstractItemView, QTimeEdit, QComboBox, QTableWidgetItem,
                              QLCDNumber, QColorDialog)
-
-import settings
 from QMessages import pop_up_message
-from system_functions import apps_list, get_from_json
+from system_functions import apps_list, get_from_json, save_stats_to_file
 
 
 class SettingsWindow(QWidget):
@@ -343,6 +343,27 @@ class SettingsWindow(QWidget):
 
         ################# PAGE 5 ###################
 
+        # В методе initUI добавьте следующие строки
+        # Создаем заголовок для пятой страницы
+        self.page5_title = QLabel("Сохранить или отправить статистику")
+        self.page5_title.setStyleSheet("color: white; font-size: 24px; font-family: Oswald;")
+        # Создаем кнопку для сохранения статистики
+        self.page5_button = QPushButton("Сохранить статистику")
+        self.page5_button.setFont(font_button)
+        self.page5_button.setStyleSheet(
+            "border-radius: 10px;color: rgb(255, 255, 255);background-color: qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:1.33, fx:0.5, fy:0.5, stop:0 rgba(26, 95, 146, 255), stop:1 rgba(255, 255, 255, 0));")
+        # Связываем кнопку с методом self.p5_save
+        self.page5_button.clicked.connect(self.p5_save_stats_to_file)
+        # Создаем вертикальный layout для пятой страницы
+        self.page5_layout = QVBoxLayout()
+        # Добавляем заголовок и кнопку в layout
+        self.page5_layout.addWidget(self.page5_title)
+        self.page5_layout.addWidget(self.page5_button)
+        # Устанавливаем layout для пятой страницы
+        self.page5.setLayout(self.page5_layout)
+        # Добавляем пятую страницу в stackedWidget
+        self.stackedWidget.addWidget(self.page5)
+
         ########################################
 
         # Связываем кнопки с функциями, которые переключают страницы
@@ -369,6 +390,16 @@ class SettingsWindow(QWidget):
         self.setFixedSize(840, 580)
 
         self.show()
+
+    def p5_total_app_time(self, app_dict):
+        total_time = 0
+        for app, time in app_dict.items():
+            total_time += time
+        return total_time
+
+    def p5_save_stats_to_file(self):
+        save_stats_to_file(self)
+        pop_up_message('Статистика сохранена', title="Успешно!")
 
     def p4_add_total_code(self):
         # Получаем введенный код и время для общего времени
