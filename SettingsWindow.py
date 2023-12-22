@@ -348,12 +348,20 @@ class SettingsWindow(QWidget):
         self.page5_title = QLabel("Сохранить или отправить статистику")
         self.page5_title.setStyleSheet("color: white; font-size: 24px; font-family: Oswald;")
         # Создаем кнопку для сохранения статистики
-        self.page5_button = QPushButton("Сохранить статистику")
+        self.page5_button = QPushButton("Сохранить статистику в Эксель")
         self.page5_button.setFont(font_button)
         self.page5_button.setStyleSheet(
             "border-radius: 10px;color: rgb(255, 255, 255);background-color: qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:1.33, fx:0.5, fy:0.5, stop:0 rgba(26, 95, 146, 255), stop:1 rgba(255, 255, 255, 0));")
         # Связываем кнопку с методом self.p5_save
         self.page5_button.clicked.connect(self.p5_save_stats_to_file)
+
+        self.page5_send = QPushButton("Отправить статистику в телеграм")
+        self.page5_send.setFont(font_button)
+        self.page5_send.setStyleSheet(
+            "border-radius: 10px;color: rgb(255, 255, 255);background-color: qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:1.33, fx:0.5, fy:0.5, stop:0 rgba(26, 95, 146, 255), stop:1 rgba(255, 255, 255, 0));")
+        # Связываем кнопку с методом self.p5_save
+        self.page5_send.clicked.connect(self.main_window.send_to_telegram)
+
         # Создаем вертикальный layout для пятой страницы
         self.page5_layout = QVBoxLayout()
         # Добавляем заголовок и кнопку в layout

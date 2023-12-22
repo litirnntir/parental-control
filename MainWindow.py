@@ -1,5 +1,6 @@
 import json
 import time
+import telebot
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import QTimer
@@ -11,6 +12,11 @@ from SettingsWindow import SettingsWindow
 from system_functions import (close_app, get_active_app_name, get_from_json,
                               get_open_apps, send_notification)
 from CodeWindow import CodeWindow
+
+TOKEN = get_from_json("settings.json")["TOKEN"]
+chat_id = get_from_json("settings.json")["chat_id"]
+# Создаем объект бота с помощью токена
+bot = telebot.TeleBot(TOKEN)
 
 
 class MainWindow(QMainWindow):
@@ -167,6 +173,8 @@ class MainWindow(QMainWindow):
 
         self.directory = None
 
+        self.token = get_from_json("settings.json")["TOKEN"]
+
         self.break_json = None
 
         # -----
@@ -252,18 +260,23 @@ class MainWindow(QMainWindow):
             self.directory = data["directory"]
         f.close()
 
-    def send_stats(self):
-        pass
+    def send_file_to_telegram(self, text):
+        # Открываем файл excel в режиме чтения
+        file = open("data.xlsx", "rb")
+        # Отправляем файл по chat_id
+        bot.send_document(chat_id, file)
+        # Закрываем файл
+        file.close()
 
-    def send_hack_message(self, text):
-        pass
+    def send_to_telegram(self, text="Текст"):
+        bot.send_message(chat_id, "Привет")
 
     def update_data(self):
         if get_from_json("settings.json")['total_time'] != self.total_time_for_percents:
             if self.break_json is not None and self.break_json >= 0:
                 self.break_json -= 1
             else:
-                self.send_hack_message("json взломали")
+                self.send_to_telegram("json взломали")
                 with open("settings.json", "r+") as f:
                     data = json.load(f)
                     data["total_time"] = self.total_time_for_percents
