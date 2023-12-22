@@ -459,7 +459,7 @@ class SettingsWindow(QWidget):
                 # Загружаем данные из файла в словарь
                 data = json.load(f)
                 # Добавляем или обновляем данные по коду для общего времени
-                data[code] = {"Приложение": 'Общее время', "Время": seconds}
+                data[code] = {"app": 'Общее время', "time": seconds}
                 # Перемещаем указатель в начало файла
                 f.seek(0)
                 # Записываем обновленный словарь в файл
@@ -498,7 +498,7 @@ class SettingsWindow(QWidget):
                 # Загружаем данные из файла в словарь
                 data = json.load(f)
                 # Добавляем или обновляем данные по коду
-                data[code] = {"Приложение": app, "Время": seconds}
+                data[code] = {"app": app, "time": seconds}
                 # Перемещаем указатель в начало файла
                 f.seek(0)
                 # Записываем обновленный словарь в файл
@@ -548,8 +548,8 @@ class SettingsWindow(QWidget):
             # Проходим по всем кодам в словаре
             for i, code in enumerate(data):
                 # Получаем приложение и время по коду
-                app = data[code]["Приложение"]
-                time = data[code]["Время"]
+                app = data[code]["app"]
+                time = data[code]["time"]
                 # Создаем ячейки с кодом, приложением и временем
                 code_item = QTableWidgetItem(code)
                 app_item = QTableWidgetItem(app)

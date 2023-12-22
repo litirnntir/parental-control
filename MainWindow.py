@@ -1,4 +1,5 @@
 import json
+import os
 import time
 import telebot
 
@@ -22,6 +23,13 @@ bot = telebot.TeleBot(TOKEN)
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+
+        # Делаем общее время = 24 часа
+        with open("settings.json", "r") as f:
+            data = json.load(f)
+        data["total_time"] = 86400
+        with open("settings.json", "w") as f:
+            json.dump(data, f)
 
         # self.setWindowFlags(Qt.WindowType.FramelessWindowHint)  # безрамочный интерфейс
         background_image = "background.png"
@@ -188,8 +196,6 @@ class MainWindow(QMainWindow):
         self.tray_icon.setToolTip('Time Tracker')  # Задаем подсказку для значка
         # Создаем меню для значка
         self.tray_menu = QMenu()
-        self.tray_menu.addAction('Показать окно', self.show)  # Добавляем действие для показа окна
-        self.tray_menu.addAction('Скрыть окно', self.hide)  # Добавляем действие для показа окна
         self.tray_menu.addAction('Настройки', self.openSettings)  # Добавляем действие для показа окна
         self.tray_menu.addAction('Выйти', self.close)  # Добавляем действие для выхода из приложения
         self.tray_icon.setContextMenu(self.tray_menu)  # Устанавливаем меню для значка
@@ -205,7 +211,7 @@ class MainWindow(QMainWindow):
         self.text_all_time.setText(_translate("MainWindow", "Осталось времени:"))
         self.time_all_time.setText(_translate("MainWindow", time.strftime("%H:%M:%S", time.gmtime(self.total_time))))
         self.time_active_app.setText(
-            _translate("MainWindow", time.strftime("%H:%M:%S", time.gmtime(self.time_left_block_app))))
+            _translate("MainWindow", time.strftime("%H:%M:%S", time.gmtime(self.total_time))))
 
     def open_code_window(self):
         self.code_window = CodeWindow(self)
