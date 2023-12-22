@@ -374,6 +374,17 @@ class SettingsWindow(QWidget):
         code = self.page4_total_code.text()
         time = self.page4_total_time.time().toString("hh:mm")
 
+        hours, minutes = time.split(":")
+        seconds = 0
+        # Преобразуем часы и минуты в целые числа
+        hours = int(hours)
+        minutes = int(minutes)
+
+        # Проверяем, что часы и минуты находятся в допустимом диапазоне
+        if 0 <= hours <= 23 and 0 <= minutes <= 59:
+            # Переводим часы и минуты в секунды, умножая на соответствующие коэффициенты
+            seconds = hours * 3600 + minutes * 60
+
         # Проверяем, что код не пустой
         if code:
             # Открываем файл code.json для чтения и записи
@@ -381,7 +392,7 @@ class SettingsWindow(QWidget):
                 # Загружаем данные из файла в словарь
                 data = json.load(f)
                 # Добавляем или обновляем данные по коду для общего времени
-                data[code] = {"Приложение": 'total', "Время": time}
+                data[code] = {"Приложение": 'total', "Время": seconds}
                 # Перемещаем указатель в начало файла
                 f.seek(0)
                 # Записываем обновленный словарь в файл
@@ -402,6 +413,17 @@ class SettingsWindow(QWidget):
         app = self.page4_apps.currentText()
         time = self.page4_time.time().toString("hh:mm")
 
+        hours, minutes = time.split(":")
+        seconds = 0
+        # Преобразуем часы и минуты в целые числа
+        hours = int(hours)
+        minutes = int(minutes)
+
+        # Проверяем, что часы и минуты находятся в допустимом диапазоне
+        if 0 <= hours <= 23 and 0 <= minutes <= 59:
+            # Переводим часы и минуты в секунды, умножая на соответствующие коэффициенты
+            seconds = hours * 3600 + minutes * 60
+
         # Проверяем, что код не пустой
         if code:
             # Открываем файл code.json для чтения и записи
@@ -409,7 +431,7 @@ class SettingsWindow(QWidget):
                 # Загружаем данные из файла в словарь
                 data = json.load(f)
                 # Добавляем или обновляем данные по коду
-                data[code] = {"Приложение": app, "Время": time}
+                data[code] = {"Приложение": app, "Время": seconds}
                 # Перемещаем указатель в начало файла
                 f.seek(0)
                 # Записываем обновленный словарь в файл
